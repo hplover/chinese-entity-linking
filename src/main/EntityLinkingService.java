@@ -1,16 +1,18 @@
-package org.answercow.stream.intent.EntityLinking.py2java;
+package main;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import org.answercow.stream.intent.EntityLinking.py2java.WordSeg.wordseg;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import WordSeg.Result;
+import WordSeg.wordseg;
 
 /**
  * @author HuangDC
- * @date 2016年3月17日
+ * @date 2016骞�3鏈�17鏃�
  * @description 
  */
 public class EntityLinkingService {
@@ -80,7 +82,7 @@ public class EntityLinkingService {
             	String bkeSynonym=bke.getSynonym();
                 if(bkeSynonym.length()!=0){
                 	if(debug)
-                		System.out.println("同义词:"+bkeSynonym);
+                		System.out.println("鍚屼箟璇�:"+bkeSynonym);
                 	result.keywordSynonym=bkeSynonym;
                 }
                 String bkeURL=bke.getURL();
@@ -163,7 +165,7 @@ public class EntityLinkingService {
             	String label=bke.getLabel();
                 if(bkeSynonym.length()!=0){
                 	if(debug)
-                		System.out.println("同义词:"+bkeSynonym);
+                		System.out.println("synonyms:"+bkeSynonym);
                 	rekeyword.keywordSynonym=bkeSynonym;
                 }
                 String bkeURL=bke.getURL();
