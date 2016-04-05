@@ -49,7 +49,7 @@ public class EntityLinkingService {
     	this.results=wseg.segWord_full(keywords_input, mode);
     	if(debug)
             System.out.println("-1(none) for entiry not found;\n0(Polysemants) for list page;\n1(Polysemant and content) for page with Polysemant;\n5(content and label and url not Polysemant maybe synonym) for unique page");
-        for(Result rekeyword:this.results){
+        for(Result rekeyword:this.results){ 
         	String keyword=rekeyword.keyword;
 			if(debug)
                 System.out.println(keyword+"\n==============================================================");
