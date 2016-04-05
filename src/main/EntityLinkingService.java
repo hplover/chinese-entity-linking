@@ -124,7 +124,86 @@ public class EntityLinkingService {
         return ;
     }
 
-	public void printResult(){
+	public void saveCrawl(String keywords_input,int mode){
+		this.results=wseg.segWord_full(keywords_input, mode);
+    	if(debug)
+            System.out.println("-1(none) for entiry not found;\n0(Polysemants) for list page;\n1(Polysemant and content) for page with Polysemant;\n5(content and label and url not Polysemant maybe synonym) for unique page");
+        for(Result rekeyword:this.results){ 
+        	String keyword=rekeyword.keyword;
+			if(debug)
+                System.out.println(keyword+"\n==============================================================");
+			bke.getResult(keyword, "");
+			int status=bke.getStatus();
+            if(debug)
+                System.out.println("status:"+status);
+            if(status==-1){
+            	if(debug)
+                    System.out.println(keyword+" entity not found");
+                System.out.println("==============================================================\n\n");
+                continue;
+            }
+            else if(status==5){
+            	String bkeSynonym=bke.getSynonym();
+            	if(bkeSynonym.length()!=0){
+                	if(debug)
+                		System.out.println("synonyms:"+bkeSynonym);
+                	rekeyword.keywordSynonym=bkeSynonym;
+                }
+                String bkeURL=bke.getURL();
+                if(debug)
+                    System.out.println("URL:"+bkeURL);
+                String bkelable=bke.getLabel();
+                if(debug)
+                    System.out.println("label:"+bkelable);
+                rekeyword.keywordURL=bkeURL;
+                rekeyword.label=bkelable;
+            }
+            else if(status==0 || status==1){
+            	HashMap<String,String> bkePolysemant = bke.getPolysemant();
+                int tempTarget=0;
+                String tempUrl="";
+                String tempPl="";
+                String templabel="";
+                Iterator<Entry<String, String>> it = bkePolysemant.entrySet().iterator();
+                while (it.hasNext()) {
+                    Entry<String, String> pair = it.next();
+                    String pl=(String) pair.getKey();
+                    String url=(String) pair.getValue();
+                    bke.getResult(pl, url);
+                    String lab=bke.getLabel();
+                    if(lab=="")
+                    	lab="null";
+                    if(bke.getContent()==null){
+                    	if(debug){
+                    		System.out.println(pl+"\t"+url+"<-- not exist");
+                    	}
+                    	continue;
+                    }
+                    int target=this.disambiguation(bke, keyword, this.results);
+                    if(target>=tempTarget){
+                    	tempTarget=target;
+                    	tempUrl=url;
+                    	tempPl=pl;
+                    	templabel=lab;
+                    }
+                    if(debug){
+                    	System.out.println(pl+"\t"+url+"\t"+lab);
+                    }
+                }
+                rekeyword.keywordURL=tempUrl;
+                rekeyword.keywordSynonym=tempPl;
+                rekeyword.label=templabel;
+            }
+            else{
+            	System.err.println("no such status");
+            }
+            if(debug)
+                System.out.println("==============================================================\n\n");
+        }
+        return ;
+	}
+    
+    public void printResult(){
     	for(Result result:this.results){
     		System.out.println(result.keyword+"\t"+result.keywordSynonym+"\t"+result.keywordURL+"\t"+result.type+"\t"+result.label);
     	}
