@@ -152,9 +152,9 @@ public class Extract {
 //	        if(titleLen!=0&&context.size()==0){
 //	        	for(int i1=0;i1<titleLen;i1++){
 //	    			String title=titles.get(i1).text();
-//	    			if(title.split("�?").length!=2)
+//	    			if(title.split("：").length!=2)
 //	    				break;
-//	    			title=title.split("�?")[1];
+//	    			title=title.split("：")[1];
 //	        		String href=titles.get(i1).attr("href");
 //	    			this.poly.put(title, baikePrefix+href);
 //    			}
@@ -162,6 +162,11 @@ public class Extract {
 //	        	return null;
 //	        }
 	        String list_result_re="<div class=\"para\" label-module=\"para\">\n.*?<a target=\"_blank\" href=\"(.*?)\">.*?·(.*?)</a>";
+	        String main_content="<div class=\"main-content\">";
+        	if(webpage.toString().contains(main_content)){
+        		this.status=1;
+        		return webpage;
+        	}
 	        List<ArrayList<String>> list_results=find(list_result_re, webpage.toString());
 	        if(!list_results.isEmpty()){
 	        	for(ArrayList<String> result:list_results){
@@ -169,13 +174,6 @@ public class Extract {
 	        	}
 	        	this.status=0;
 	        	return null;
-	        }
-	        else{
-	        	String main_content="<div class=\"main-content\">";
-	        	if(webpage.toString().contains(main_content)){
-	        		this.status=1;
-	        		return webpage;
-	        	}
 	        }
 	        this.status=-1;
 	        return null;
@@ -263,12 +261,12 @@ public class Extract {
 	    }
 	
 	    public static void main(String args[]){
-//	    	String content=Extract.crawlWebContent("http://baike.baidu.com/view/14351.htm?fromtitle=中国人民解放军国防科学技术大�?&fromid=1223537&type=syn");
+//	    	String content=Extract.crawlWebContent("http://baike.baidu.com/view/14351.htm?fromtitle=中国人民解放军国防科学技术大学&fromid=1223537&type=syn");
 //	    	System.out.println(content);
-//	    	String re="<div class=\"para\" label-module=\"para\">\n.*?<a target=\"_blank\" href=\"(.*?)\">.*?�?(.*?)</a>";
+//	    	String re="<div class=\"para\" label-module=\"para\">\n.*?<a target=\"_blank\" href=\"(.*?)\">.*?：(.*?)</a>";
 //	        find(re,content);
-//	    	中国人民解放军国防科学技术大�? 苹果 国奥 虾极霸掣
+//	    	中国人民解放军国防科学技术大学 苹果 国奥 虾极霸掣
 	    	Extract extract=new Extract();
-	    	extract.getResult("中国人民解放军国防科学技术大�?", "");
+	    	extract.getResult("中国人民解放军国防科学技术大学", "");
 	    }
 }
