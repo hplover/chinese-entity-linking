@@ -18,7 +18,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import htmlbot.contentextractor.ContentExtractor;
+import contextExtract.contentextractor.ContentExtractor;
 import net.sf.json.JSONArray;
 /**
  * @author HuangDC

@@ -16,31 +16,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package htmlbot;
+package contextExtract;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+
+import java.io.IOException;
 
 /**
  * Created by a on 2014/11/2.
  */
-public class DomPage {
+public class HtmlBot {
 
-    public DomPage(Document doc) {
-        this.doc = doc;
+    public static DomPage getDomPageByURL(String url) throws IOException {
+        Document doc=Jsoup.connect(url).get();
+        return new DomPage(doc);
     }
 
-    private Document doc=null;
-
-
-    public String getURL(){
-        return doc.baseUri();
+    public static DomPage getDomPageByHtml(String html){
+        return getDomPageByHtml(html,null);
     }
 
-    public Document getDoc() {
-        return doc;
-    }
+    public static DomPage getDomPageByHtml(String html,String url){
 
-    public void setDoc(Document doc) {
-        this.doc = doc;
+        Document doc= Jsoup.parse(html);
+        if(url!=null){
+            doc.setBaseUri(url);
+        }
+        DomPage domPage=new DomPage(doc);
+        return domPage;
     }
 }

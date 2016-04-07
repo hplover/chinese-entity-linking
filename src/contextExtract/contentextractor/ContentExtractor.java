@@ -15,18 +15,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package htmlbot.contentextractor;
+package contextExtract.contentextractor;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.NodeVisitor;
 
-import htmlbot.DomPage;
-import htmlbot.HtmlBot;
-import htmlbot.util.GaussSmooth;
-import htmlbot.util.JsoupHelper;
-import htmlbot.util.TextUtils;
+import contextExtract.DomPage;
+import contextExtract.HtmlBot;
+import contextExtract.util.GaussSmooth;
+import contextExtract.util.JsoupHelper;
+import contextExtract.util.TextUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
