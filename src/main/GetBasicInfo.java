@@ -8,48 +8,51 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.regex.*;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import htmlbot.contentextractor.ContentExtractor;
 import net.sf.json.JSONArray;
 /**
  * @author HuangDC
  * @date 2016年3月30日
  * @description 
  */
-public class GetValue {
+public class GetBasicInfo {
+		private Date date=new Date();
 	    private int status=-1;
 	    private String word="";
 	    private String url="";
-	    private HashMap<String,String> poly=new HashMap<>();
+	    private LinkedHashMap<String, String> poly=new LinkedHashMap<String, String>();
 	    private Document content=null;
 	    private String synonym="";
 		private String label="";
+		private String desc="";
+		private String infobox="";
+		private String summary="";
 		
 	    private int index;
 	   	static String user_agent="";
 	    static List<String> user_agents=new ArrayList<>(); 
 	    static int useragent_len=0;
 	    
+	    private boolean isDesc=false,isPoly=false,isSynonym=false,isLabel=false,isInfoBox=false,isSummary=false;
+	    
+	    
 	   	static String baikePrefix="http://baike.baidu.com";
 	   	
 	    static{
-	    	Document content = null;
 	    	boolean flag=true;
-	    	String url="http://www.baidu.com";
 	    	int i=0;
 	    	while(flag){
 	    		try {
-	    			content=Jsoup.connect(url).userAgent(user_agent).get();
 	    			flag=false;
 	    		} catch (Exception e) {
 	    			i++;
@@ -59,8 +62,6 @@ public class GetValue {
 	    			}
 	    		}
 	    	}
-	    	
-	    	
 	    	try (
 	    		    InputStream fis = new FileInputStream("resources/user_agents");
 	    		    InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
@@ -75,15 +76,25 @@ public class GetValue {
 				}
 	    	useragent_len=user_agents.size();
 	    }
-	    
-	    
-	    public GetValue(String keyword) throws UnsupportedEncodingException{
-	    	this.word=keyword;
+	    public GetBasicInfo(String input) throws UnsupportedEncodingException{
 	    	index=new Random().nextInt(useragent_len)%(useragent_len+1);
 	    	user_agent=user_agents.get(index);
-	    	url="http://baike.baidu.com/search/word?word="+URLEncoder.encode(keyword,"utf-8");
+	    	if(isURL(input)){
+	    		url=input;
+	    	}
+	    	else {
+	    		word=input;
+		    	url="http://baike.baidu.com/search/word?word="+URLEncoder.encode(input,"utf-8");
+			}
 	    	content=getBaiKeWeb(url);
 	    }
+	    private boolean isURL(String str) {
+	    	str=str.replaceAll("^((https|http|ftp|rtsp|mms)?://)[^\\s]+", "");
+	    	if(str.isEmpty()){
+	    		return true;
+	    	}
+			return false;
+		}
 	    private static Document crawlWebContent(String url) {
 	    	int i=0;
 	    	boolean flag=true;
@@ -97,7 +108,6 @@ public class GetValue {
 	    			try {
 						Thread.sleep(10000);
 					} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
 	    			System.out.println("connect failed..try again:"+url);
@@ -136,47 +146,60 @@ public class GetValue {
 	        return null;
 		}
 	    public String getDesc(){
+	    	if(isDesc){
+	    		return desc;
+	    	}
 	    	Elements span = null;
 	    	if(content!=null&&status==1)
 	    		span=content.getElementsByClass("selected");
 	    	if(span!=null&&span.size()>0)
-	    		return span.first().text();
+	    	{
+	    		desc=span.first().text();
+	    		isDesc=true;
+	    		return desc;
+	    	}
 	    	return "";
 	    }
-	    public HashMap<String, String> getPolysemant(){
-	    	if(content==null||status!=1){
-	    		return null;
+	    protected LinkedHashMap<String, String> getPoly(){
+	    	if(isPoly||content==null||status!=1){
+	    		return poly;
 	    	}
     		Elements a_results=content.select("li[class=item]").select("a");
     		for(int i=0;i<a_results.size();i++){
     			poly.put(a_results.get(i).attr("title"), baikePrefix+a_results.get(i).attr("href").replace("#viewPageContent", ""));
     		}
+    		isPoly=true;
 	    	return poly;
 	    }
 	    public String getWord(){
 	    	return word;
 	    }
 	    public String getSynonym(){
-	    	if(content==null||status!=5){
+	    	if(isSynonym||content==null||status!=5){
 	    		return synonym;
 	    	}
 	    	String title=content.title().replace("_百度百科", "");
+	    	isPoly=true;
 	    	if(!title.equals(word))
 	    		return title;
 	    	return synonym;
 	    }
 	    public String getLabel(){
+	    	if(isLabel){
+	    		return label;
+	    	}
 	    	if(content!=null){
 	        	Elements xx=content.select("span[class=taglist]");
 	        	for(int i1=0;i1<xx.size();i1++){
 	        		label=label+xx.get(i1).text()+" ";
 	        	}
 	    	}
+	    	isLabel=true;
 	    	return label;
 	    }
-	    public String getContent(){
+	    public String getContext() throws Exception{
 	    	if(content!=null)
-	    		return content.toString().substring(0, 100);
+	    		return ContentExtractor.getContentByHtml(content.toString());
 	    	return "";
 	    }
 	    public String getURL(){
@@ -186,6 +209,9 @@ public class GetValue {
 	    	return status;
 	    }
 		public String getInforBox() {
+			if(isInfoBox){
+				return infobox;
+			}
 			Elements basicInfo=content.getElementsByClass("basic-info");
 			if(basicInfo.isEmpty()){
 				return "";
@@ -207,38 +233,49 @@ public class GetValue {
 					}
 					outJSONArray.add(0, property);
 					outJSONArray.add(1, valueJson);
+					outJSONArray.add(2,"xxxxxxxxxxxxxxxxxxxxxx");
 				}
-				return outJSONArray.toString();
+				isInfoBox=true;
+				infobox=outJSONArray.toString();
+				return infobox;
 			}
-			return null;
+			return "";
 		}
 		public String getSummary() {
+			if(isSummary){
+				return summary;
+			}
 			Elements summarys = content.getElementsByClass("lemma-summary");
+			isSummary=true;
 			if (summarys.isEmpty()) {
-				return null;
+				return "";
 			}else {
-				return summarys.first().text();
+				summary=summarys.first().text();
+				return summary;
 			}
 		}	    
+		public String getDate() {
+			return date.toString();
+		}
 	    
-	    public static void main(String args[]) throws UnsupportedEncodingException{
-//	    	String content=Extract.crawlWebContent("http://baike.baidu.com/view/14351.htm?fromtitle=中国人民解放军国防科学技术大学&fromid=1223537&type=syn");
-//	    	System.out.println(content);
-//	    	String re="<div class=\"para\" label-module=\"para\">\n.*?<a target=\"_blank\" href=\"(.*?)\">.*?：(.*?)</a>";
-//	        find(re,content);
-//	    	中国人民解放军国防科学技术大学 苹果 国奥 虾极霸掣
-//	    	String url="http://baike.baidu.com/view/1555561.htm";//都会
-//	    	String url="http://baike.baidu.com/subview/5642/7990450.htm";//四叶草
-	    	GetValue extract=new GetValue("北大");
+	    public static void main(String args[]) throws Exception{
+	    	long start=System.currentTimeMillis();
+	    	GetBasicInfo extract=new GetBasicInfo("四叶草");
+	    	System.out.println("time:"+extract.getDate());
+	    	System.out.println("first:");
 	    	System.out.println("word:"+extract.getWord());
 	    	System.out.println("status:"+extract.getStatus());
 	    	System.out.println("url:"+extract.getURL());
 	    	System.out.println("desc:"+extract.getDesc());
 	    	System.out.println("synonym:"+extract.getSynonym());
 	    	System.out.println("summary:"+extract.getSummary());
-//	    	System.out.println("content"+extract.getContent());
+	    	System.out.println("content:"+extract.getContext());
+	    	System.out.println("=============================================");
 	    	System.out.println("label:"+extract.getLabel());
 	    	System.out.println("infobox:"+extract.getInforBox());
+	    	System.out.println("polysemy:"+extract.getPoly().size()+" "+extract.getPoly().toString());
+	    	long middle=System.currentTimeMillis();
 	    	
+	    	System.out.println("first:"+(middle-start));
 	    }
 }
