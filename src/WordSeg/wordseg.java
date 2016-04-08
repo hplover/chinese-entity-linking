@@ -4,11 +4,14 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import com.hankcs.hanlp.seg.common.Term;
+import com.mongodb.AggregationOptions.Builder;
 
 public class wordseg {
 	static String path="C:/javarequest/models/";
@@ -25,7 +28,7 @@ public class wordseg {
 		sgmt = new BigSegment(path);
 	}
 	
-	private String trimText(String text){
+	private static String trimText(String text){
 		if(text.length() > 6003){
 			text = text.substring(0, 6001);
 		}
@@ -49,7 +52,7 @@ public class wordseg {
 	}
 	
 	@SuppressWarnings("null")
-	public List<Result> segWord_full(String text_single,int mode) {
+	public List<Result> segWord_Result(String text_single,int mode) {
 		System.out.println("Src:"+text_single);
 		text_single=trimText(text_single);
 		System.out.println("Trim:"+text_single);
@@ -78,6 +81,39 @@ public class wordseg {
 		System.out.println();
 		return ReList;
 	}
+	
+	public static HashMap<String, List<Double>> segWord_TF(String text_single,int mode) {//the 0th one is count number, the first one means tf value
+		System.out.println("Src:"+text_single);
+		text_single=trimText(text_single);
+		System.out.println("Trim:"+text_single);
+		String[] textarray=text_single.split(",");
+		System.out.print("Segment:");
+		HashMap<String, Double> tf=new HashMap<>();
+		String ttype=null;
+		String tword=null;
+		double allwordscount=0;
+		for(String text:textarray){//count word
+			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
+			for(Term result:termReList){
+				ttype=result.nature.name();
+				tword=result.word;
+				if(!getN.contains(ttype))
+					continue;
+				if(tf.containsKey(tword))
+					tf.put(tword, tf.get(tword)+1);
+				else {
+					tf.put(result.word,1.0);
+				}
+				allwordscount++;
+			}
+		}
+		for(Entry<String, Double> biubiu:tf.entrySet()){
+			tword=biubiu.getKey();
+			tf.put(tword, tf.get(tword)/allwordscount);
+		}
+		System.out.println(tf);
+		return null;
+	}
 
 	public static void main(String[] args) throws FileNotFoundException{
 		wordseg xx=new wordseg();
@@ -85,7 +121,7 @@ public class wordseg {
 //		String text="新时期生理生态学的发展，面临分子生物学和组学（-omics）等学科和技术手段的挑战，同时新学科和新技术发展也为生理生态学的发展提供了新的机遇。不同动物类群适应各种不同环境（尤其是极端环境）的机理，需要从各个组织层次上、各学科交叉进行整合研究。动物对不断变化着的环境的生理功能的调节和改变及其适应和进化机理，将是生理生态学未来的重要研究主题。我们也看到，生理生态学在动物行为学、保护生物学、种群生态学和群落生态学中地位和作用，显得日趋重要。保护生理学（conservation physiology）、代谢生态学（metabolicecology）和宏生理学（macrophysiology）等新领域的兴起，也进一步充实和拓展了生理生态学的内涵。";
 //		String text="多聚酶链式反应（PCR）是一项用于体外复制DNA的极为通用的技术。简而言之，PCR技术可以使单链DNA被复制数百万次，也允许用事先确定好的方式对被复制的DNA序列进行改动。例如，PCR技术可以用于引入限制性酶切位点，或者对特定的DNA碱基进行突变（改变）。PCR技术还可以用于从cDNA文库获得特定的DNA片段，或者从另一个角度，用于判断一个cDNA文库中是否含有特定的DNA片段。";
 		System.out.println(text);
-		List<Result> result=xx.segWord_full(text,3);
+		List<Result> result=xx.segWord_Result(text,3);
 		for(Result tt:result){
 			System.out.println(tt.keyword+"\t"+tt.type);
 		}

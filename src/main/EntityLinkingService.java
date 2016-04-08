@@ -46,7 +46,7 @@ public class EntityLinkingService {
 	}
     
     public void entitylinking(String keywords_input,int mode){
-    	this.results=wseg.segWord_full(keywords_input, mode);
+    	this.results=wseg.segWord_Result(keywords_input, mode);
     	if(debug)
             System.out.println("-1(none) for entiry not found;\n0(Polysemants) for list page;\n1(Polysemant and content) for page with Polysemant;\n5(content and label and url not Polysemant maybe synonym) for unique page");
         for(Result rekeyword:this.results){ 
@@ -125,7 +125,7 @@ public class EntityLinkingService {
     }
 
 	public void saveCrawl(String keywords_input,int mode){
-		this.results=wseg.segWord_full(keywords_input, mode);
+		this.results=wseg.segWord_Result(keywords_input, mode);
     	if(debug)
             System.out.println("-1(none) for entiry not found;\n0(Polysemants) for list page;\n1(Polysemant and content) for page with Polysemant;\n5(content and label and url not Polysemant maybe synonym) for unique page");
         for(Result rekeyword:this.results){ 

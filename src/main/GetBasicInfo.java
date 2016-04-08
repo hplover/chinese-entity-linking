@@ -146,11 +146,11 @@ public class GetBasicInfo {
 	        return null;
 		}
 	    public String getDesc(){
-	    	if(isDesc){
+	    	if(isDesc||content==null){
 	    		return desc;
 	    	}
 	    	Elements span = null;
-	    	if(content!=null&&status==1)
+	    	if(status==1)
 	    		span=content.getElementsByClass("selected");
 	    	if(span!=null&&span.size()>0)
 	    	{
@@ -185,21 +185,23 @@ public class GetBasicInfo {
 	    	return synonym;
 	    }
 	    public String getLabel(){
-	    	if(isLabel){
+	    	if(isLabel||content==null){
 	    		return label;
 	    	}
-	    	if(content!=null){
-	        	Elements xx=content.select("span[class=taglist]");
-	        	for(int i1=0;i1<xx.size();i1++){
-	        		label=label+xx.get(i1).text()+" ";
-	        	}
-	    	}
+        	Elements xx=content.select("span[class=taglist]");
+        	for(int i1=0;i1<xx.size();i1++){
+        		label=label+xx.get(i1).text()+" ";
+        	}
 	    	isLabel=true;
 	    	return label;
 	    }
-	    public String getContext() throws Exception{
+	    public String getContext(){
 	    	if(content!=null)
-	    		return ContentExtractor.getContentByHtml(content.toString());
+				try {
+					return ContentExtractor.getContentByHtml(content.toString());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 	    	return "";
 	    }
 	    public String getURL(){
@@ -209,7 +211,7 @@ public class GetBasicInfo {
 	    	return status;
 	    }
 		public String getInforBox() {
-			if(isInfoBox){
+			if(isInfoBox||content==null){
 				return infobox;
 			}
 			Elements basicInfo=content.getElementsByClass("basic-info");
@@ -233,7 +235,6 @@ public class GetBasicInfo {
 					}
 					outJSONArray.add(0, property);
 					outJSONArray.add(1, valueJson);
-					outJSONArray.add(2,"xxxxxxxxxxxxxxxxxxxxxx");
 				}
 				isInfoBox=true;
 				infobox=outJSONArray.toString();
@@ -242,7 +243,7 @@ public class GetBasicInfo {
 			return "";
 		}
 		public String getSummary() {
-			if(isSummary){
+			if(isSummary||content==null){
 				return summary;
 			}
 			Elements summarys = content.getElementsByClass("lemma-summary");
@@ -269,7 +270,7 @@ public class GetBasicInfo {
 	    	System.out.println("desc:"+extract.getDesc());
 	    	System.out.println("synonym:"+extract.getSynonym());
 	    	System.out.println("summary:"+extract.getSummary());
-	    	System.out.println("content:"+extract.getContext());
+	    	System.out.println("content:\n\t"+extract.getContext().replace("\n", ""));
 	    	System.out.println("=============================================");
 	    	System.out.println("label:"+extract.getLabel());
 	    	System.out.println("infobox:"+extract.getInforBox());
