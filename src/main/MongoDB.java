@@ -1,9 +1,12 @@
 package main;
 import java.util.Arrays;
 import java.text.ParseException;
+
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 /**
@@ -20,7 +23,8 @@ public class MongoDB {
 		 // 连接到 mongodb 服务器
 	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
 	    
-	    MongoDatabase mongoDatabase = mongoClient.getDatabase("Plover");
+	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
+	    MongoCollection<Document> collection=mongoDatabase.getCollection("Plover");
 	    
 	}
 	

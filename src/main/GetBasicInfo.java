@@ -11,9 +11,12 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -33,9 +36,9 @@ public class GetBasicInfo {
 	    private LinkedHashMap<String, String> poly=new LinkedHashMap<String, String>();
 	    private Document content=null;
 	    private String synonym="";
-		private String label="";
+		private Set<String> label=new HashSet<>();
 		private String desc="";
-		private String infobox="";
+		private JSONArray infobox=new JSONArray();
 		private String summary="";
 		
 	    private int index;
@@ -174,7 +177,7 @@ public class GetBasicInfo {
 	    public String getWord(){
 	    	return word;
 	    }
-	    public String getSynonym(){
+	    public String getAlias(){
 	    	if(isSynonym||content==null||status!=5){
 	    		return synonym;
 	    	}
@@ -184,13 +187,13 @@ public class GetBasicInfo {
 	    		return title;
 	    	return synonym;
 	    }
-	    public String getLabel(){
+	    public Set<String> getLabel(){
 	    	if(isLabel||content==null){
 	    		return label;
 	    	}
         	Elements xx=content.select("span[class=taglist]");
         	for(int i1=0;i1<xx.size();i1++){
-        		label=label+xx.get(i1).text()+" ";
+        		label.add(xx.get(i1).text());
         	}
 	    	isLabel=true;
 	    	return label;
@@ -210,13 +213,13 @@ public class GetBasicInfo {
 	    public int getStatus(){
 	    	return status;
 	    }
-		public String getInforBox() {
+		public JSONArray getInforBox() {
 			if(isInfoBox||content==null){
 				return infobox;
 			}
 			Elements basicInfo=content.getElementsByClass("basic-info");
 			if(basicInfo.isEmpty()){
-				return "";
+				return infobox;
 			}
 			Elements dtList = basicInfo.first().select("dt");
 			Elements ddList = basicInfo.first().select("dd");
@@ -237,10 +240,10 @@ public class GetBasicInfo {
 					outJSONArray.add(1, valueJson);
 				}
 				isInfoBox=true;
-				infobox=outJSONArray.toString();
+				infobox=outJSONArray;
 				return infobox;
 			}
-			return "";
+			return infobox;
 		}
 		public String getSummary() {
 			if(isSummary||content==null){
@@ -255,8 +258,8 @@ public class GetBasicInfo {
 				return summary;
 			}
 		}	    
-		public String getDate() {
-			return date.toString();
+		public Date getDate() {
+			return date;
 		}
 	    
 	    public static void main(String args[]) throws Exception{
@@ -268,7 +271,7 @@ public class GetBasicInfo {
 	    	System.out.println("status:"+extract.getStatus());
 	    	System.out.println("url:"+extract.getURL());
 	    	System.out.println("desc:"+extract.getDesc());
-	    	System.out.println("synonym:"+extract.getSynonym());
+	    	System.out.println("synonym:"+extract.getAlias());
 	    	System.out.println("summary:"+extract.getSummary());
 	    	System.out.println("content:\n\t"+extract.getContext().replace("\n", ""));
 	    	System.out.println("=============================================");

@@ -82,7 +82,7 @@ public class wordseg {
 		return ReList;
 	}
 	
-	public static HashMap<String, List<Double>> segWord_TF(String text_single,int mode) {//the 0th one is count number, the first one means tf value
+	public static HashMap<String, Double> segWord_TF(String text_single,int mode) {//the 0th one is count number, the first one means tf value
 		System.out.println("Src:"+text_single);
 		text_single=trimText(text_single);
 		System.out.println("Trim:"+text_single);
