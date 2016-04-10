@@ -4,15 +4,23 @@ import java.io.UnsupportedEncodingException;
 import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,31 +35,39 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 import WordSeg.wordseg;
+import javatuples.Pair;
+import javatuples.Triplet;
 import net.sf.json.JSONArray;
 
 public class GetBaikeInfo extends GetBasicInfo{
-    public static Set<BasicDBObject> documents=new HashSet<>();
+    public static Set<Document> documents=new HashSet<>();
+    public static HashMap<String, HashMap<String, Triplet<Integer, Double, Double>>> docs_context=new HashMap<>();
     public static List<HashMap<String, Double>> tfs=new ArrayList<>();
+    public static int mode=3;
+    private double feature_words_ratio=0.3;
+    private int docsize=1;
+    HashMap<String, List<String>> feature_words=new HashMap<>();
     static MongoCollection<Document> collection=null;
     static{
-		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
-		System.out.println("***********");
-		 
-		 // 连接到 mongodb 服务器
-	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
-	    
-	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
-	    collection=mongoDatabase.getCollection("Plover");
+//		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
+//		System.out.println("***********");
+//		 
+//		 // 连接到 mongodb 服务器
+//	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
+//	    
+//	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
+//	    collection=mongoDatabase.getCollection("Plover");
     }
 	public GetBaikeInfo(String word) throws UnsupportedEncodingException{
 		super(word);
+		docs_context.put(super.getURL(), wordseg.segWord_TF(super.getContext(), mode));
 	}
-	public Set<BasicDBObject> getPolysemantParallel() throws UnsupportedEncodingException{
+	public Set<Document> getPolysemantParallel() throws UnsupportedEncodingException{
 		LinkedHashMap<String, String> polys=super.getPoly();
 		if(polys.isEmpty()){
 			return documents;
 		}
-		int polysize=polys.size();
+		docsize=docsize+polys.size();
 		ExecutorService executorService=Executors.newCachedThreadPool();
 		String url="",desc="";
 		for(Entry<String, String> poly:polys.entrySet()){
@@ -76,7 +92,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		for(Entry<String, String> poly:polys.entrySet()){
     		url=poly.getValue();
     		desc=poly.getKey();
-    		BasicDBObject document = new BasicDBObject();
+    		Document document = new Document();
 			GetBasicInfo temp=new GetBasicInfo(url);
 			document.put("poly_url", url);
 			document.put("poly_desc", desc);
@@ -133,7 +149,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		if(!default_infobox.isEmpty()){
 			document.put("default_infobox", default_infobox);
 		}
-		Set<BasicDBObject> Polysemant;
+		Set<Document> Polysemant;
 		try {
 			Polysemant = getPolysemantParallel();
 			if(!Polysemant.isEmpty()&&Polysemant!=null){
@@ -142,27 +158,53 @@ public class GetBaikeInfo extends GetBasicInfo{
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
+//		System.out.println(document);
+		getTFIDF();
 //		collection.insertOne(document);//write to mongodb
 		return document;
 	}
 	
+	static <K,V extends Comparable<? super V>>
+	SortedSet<Map.Entry<K,V>> entriesSortedByValues(Map<K,V> map) {
+	    SortedSet<Map.Entry<K,V>> sortedEntries = new TreeSet<Map.Entry<K,V>>(
+	        new Comparator<Map.Entry<K,V>>() {
+	            @Override public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
+	                int res = e2.getValue().compareTo(e1.getValue());
+	                return res != 0 ? res : 1;
+	            }
+	        }
+	    );
+	    sortedEntries.addAll(map.entrySet());
+	    return sortedEntries;
+	}
 	
 	public String getTFIDF() {
-		HashMap<String, Double> docsTF=new HashMap<>();
-		String word=null;
-		Double count=0.0;
-		for(HashMap<String, Double> tf:tfs){
-			for(Entry<String, Double> doc:tf.entrySet()){
-				word=doc.getKey();
-				count=doc.getValue();
-				if(docsTF.containsKey(word)){
-					docsTF.put(word, docsTF.get(word)+count);
-				}
-				else{
-					docsTF.put(word, count);
+		for(Entry<String, HashMap<String, Triplet<Integer, Double, Double>>> doc:docs_context.entrySet()){
+			String url=doc.getKey();
+			HashMap<String, Triplet<Integer, Double, Double>> terms=doc.getValue();
+			Map<String,Double> word_tfidf=new HashMap<String, Double>();
+			for(Entry<String, Triplet<Integer, Double, Double>> doc_term:terms.entrySet()){
+				String word=doc_term.getKey();
+				Triplet<Integer, Double, Double> term_data=doc_term.getValue();
+				Double tfidf=term_data.getValue1()*(1+Math.log(wordseg.alldocterms/wordseg.allterms.get(word)));
+//				System.out.println("url:"+word+"\ttfidf"+tfidf);
+				word_tfidf.put(word, tfidf);
+			}
+			SortedSet<Entry<String, Double>> result=entriesSortedByValues(word_tfidf);
+			
+			List<String> temp=new ArrayList<>();
+			int i=0;
+			int proportion=(int) (word_tfidf.size()*feature_words_ratio);
+			for(Entry<String, Double> word:result){
+				temp.add(word.getKey());
+				i++;
+				if(i>proportion){
+					break;
 				}
 			}
+			feature_words.put(url, temp);
 		}
+		System.out.println(feature_words);
 		return "";
 	}
 	
@@ -190,14 +232,13 @@ public class GetBaikeInfo extends GetBasicInfo{
 //    	System.out.println("default:"+(mu-start));
 //    	System.out.println("sequence:"+(middle-mu));
 //    	System.out.println("parallel:"+(pp-middle));
-		System.out.println("document:\n"+extract.writeMongo());
+		extract.writeMongo();
     	long pp=System.currentTimeMillis();
     	System.out.println("all:"+(pp-start));
 	}
 }
 
 class PolyParallel implements Runnable {
-    private final Object lock = new Object();
 	private String url;
 	private String desc;
 	public PolyParallel(String url, String desc) {
@@ -211,15 +252,14 @@ class PolyParallel implements Runnable {
     }
 
     public void process() {
-		BasicDBObject document = new BasicDBObject();
-		List<String> terms=new ArrayList<>();
-		writeDocument(url,desc,document,terms);
-		synchronized(lock){
+		Document document = new Document();
+		writeDocument(url,desc,document);
+		synchronized(GetBaikeInfo.documents){
 			GetBaikeInfo.documents.add(document);
 		}
     }
 
-    private void writeDocument(String url, String desc, BasicDBObject document, List<String> terms) {
+    private void writeDocument(String url, String desc, Document document) {
     	try {
 			GetBasicInfo temp=new GetBasicInfo(url);
 			document.put("poly_url", url);
@@ -232,6 +272,12 @@ class PolyParallel implements Runnable {
 			}
 			if(!temp.getInforBox().isEmpty()){
 				document.put("poly_infobox", temp.getInforBox());
+			}
+			if(!temp.getContext().isEmpty()){
+				HashMap<String, Triplet<Integer, Double, Double>> terms=wordseg.segWord_TF(temp.getContext(), GetBaikeInfo.mode);
+				synchronized (GetBaikeInfo.docs_context) {
+					GetBaikeInfo.docs_context.put(url, terms);
+				}
 			}
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

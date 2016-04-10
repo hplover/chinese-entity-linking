@@ -486,7 +486,7 @@ public static String replaceAnsiMarkWithSpace(String text) {
 //    }
 //    return builder.toString();
 	
-	text=text.replaceAll("\\pP|\\pS|\\pZ|\\pM", " ");
+	text=text.replaceAll("\\pP|\\pS|\\pZ|\\pM|\\d", " ");
 	text=text.trim();
 	text=text.replaceAll(" {1,}", ",");
 	return text;

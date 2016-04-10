@@ -11,9 +11,9 @@ import java.util.List;
 public class DocumentParser {
 
     //This variable will hold all terms of each document in an array.
-    private List<String[]> termsDocsArray = new ArrayList<>();  
-    private List<String> allTerms = new ArrayList<>(); //to hold all terms
-    private List<double[]> tfidfDocsVector = new ArrayList<>();
+    private static List<String[]> termsDocsArray = new ArrayList<>();  
+    private static List<String> allTerms = new ArrayList<>(); //to hold all terms
+    private static List<double[]> tfidfDocsVector = new ArrayList<>();
 
     /**
      * Method to read files and store in array.
@@ -58,10 +58,18 @@ public class DocumentParser {
                 tf = new TfIdf().tfCalculator(docTermsArray, terms);
                 idf = new TfIdf().idfCalculator(termsDocsArray, terms);
                 tfidf = tf * idf;
+                System.out.println(tfidf);
                 tfidfvectors[count] = tfidf;
                 count++;
             }
             tfidfDocsVector.add(tfidfvectors);  //storing document vectors;            
         }
+    }
+    
+    public static void main(String args[]) throws FileNotFoundException, IOException { 
+    	DocumentParser dp = new DocumentParser(); 
+    	dp.parseFiles("d://11"); // give the location of source file 
+    	dp.tfIdfCalculator(); //calculates tfidf dp.getCosineSimilarity(); //calculates cosine similarity }
+    	System.out.println(termsDocsArray+"\n"+allTerms);
     }
 }
