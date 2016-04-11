@@ -49,14 +49,14 @@ public class GetBaikeInfo extends GetBasicInfo{
     HashMap<String, List<String>> feature_words=new HashMap<>();
     static MongoCollection<Document> collection=null;
     static{
-//		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
-//		System.out.println("***********");
-//		 
-//		 // 连接到 mongodb 服务器
-//	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
-//	    
-//	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
-//	    collection=mongoDatabase.getCollection("Plover");
+		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
+		System.out.println("***********");
+		 
+		 // 连接到 mongodb 服务器
+	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
+	    
+	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
+	    collection=mongoDatabase.getCollection("Plover");
     }
 	public GetBaikeInfo(String word) throws UnsupportedEncodingException{
 		super(word);
@@ -170,6 +170,12 @@ public class GetBaikeInfo extends GetBasicInfo{
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
+		try {
+			collection.insertOne(document);
+		} catch (Exception e) {
+			System.err.println("write to mongodb failed");
+		}
+		
 		return document;
 	}
 	
