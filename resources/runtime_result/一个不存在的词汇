@@ -1,0 +1,9 @@
+Document
+{
+	{
+		Date=Mon Apr 11 15:55:14 CST 2016, 
+		word=一个不存在的词汇, 
+		status=-1, 
+		default_url=http://baike.baidu.com/search/word?word=%E4%B8%80%E4%B8%AA%E4%B8%8D%E5%AD%98%E5%9C%A8%E7%9A%84%E8%AF%8D%E6%B1%87, default_feature=[]
+	}
+}

@@ -26,7 +26,7 @@ public class BigSegment {
 		synchronized (isInited) {
 			if (!isInited) {
 				isInited = true;
-				String prefix = path + "nlp/";
+				String prefix = path ;
 				HanLP.Config.BiGramDictionaryPath = prefix
 						+ HanLP.Config.BiGramDictionaryPath;
 				HanLP.Config.CharTablePath = prefix

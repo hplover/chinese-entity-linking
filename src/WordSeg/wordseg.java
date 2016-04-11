@@ -18,7 +18,7 @@ import javatuples.Pair;
 import javatuples.Triplet;
 
 public class wordseg {
-	static String path="C:/javarequest/models/";
+	static String path="D:/BaiduYunDownload/";
 	static BigSegment sgmt = null;
 	public static HashMap<String, Long> allterms=new HashMap<>();
 	public static long alldocterms=0;

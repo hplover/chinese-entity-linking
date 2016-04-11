@@ -83,37 +83,37 @@ public class GetBaikeInfo extends GetBasicInfo{
         }
 		return documents;
 	}
-	public List<Document> getPolysemantSequence() throws UnsupportedEncodingException{
-		LinkedHashMap<String, String> polys=super.getPoly();
-		if(polys.isEmpty()){
-			return null;
-		}
-		String url="",desc="";
-		for(Entry<String, String> poly:polys.entrySet()){
-    		url=poly.getValue();
-    		desc=poly.getKey();
-    		Document document = new Document();
-			GetBasicInfo temp=new GetBasicInfo(url);
-			document.put("poly_url", url);
-			document.put("poly_desc", desc);
-			if(!temp.getSummary().isEmpty()){
-				document.put("poly_summary", temp.getSummary());
-			}
-			if(!temp.getLabel().isEmpty()){
-				document.put("poly_label", temp.getLabel());
-			}
-			if(!temp.getInforBox().isEmpty()){
-				document.put("poly_infobox", temp.getInforBox());
-			}
-			if(!temp.getContext().isEmpty()){
-				document.put("poly_context", temp.getContext());
-			}
-			documents.add(document);
-		}
-
-		System.out.println(documents);
-		return null;
-	}
+//	public List<Document> getPolysemantSequence() throws UnsupportedEncodingException{
+//		LinkedHashMap<String, String> polys=super.getPoly();
+//		if(polys.isEmpty()){
+//			return null;
+//		}
+//		String url="",desc="";
+//		for(Entry<String, String> poly:polys.entrySet()){
+//    		url=poly.getValue();
+//    		desc=poly.getKey();
+//    		Document document = new Document();
+//			GetBasicInfo temp=new GetBasicInfo(url);
+//			document.put("poly_url", url);
+//			document.put("poly_desc", desc);
+//			if(!temp.getSummary().isEmpty()){
+//				document.put("poly_summary", temp.getSummary());
+//			}
+//			if(!temp.getLabel().isEmpty()){
+//				document.put("poly_label", temp.getLabel());
+//			}
+//			if(!temp.getInforBox().isEmpty()){
+//				document.put("poly_infobox", temp.getInforBox());
+//			}
+//			if(!temp.getContext().isEmpty()){
+//				document.put("poly_context", temp.getContext());
+//			}
+//			documents.add(document);
+//		}
+//
+//		System.out.println(documents);
+//		return null;
+//	}
 	
 	public Document writeMongo(){
 		String word=super.getWord();
@@ -152,15 +152,24 @@ public class GetBaikeInfo extends GetBasicInfo{
 		Set<Document> Polysemant;
 		try {
 			Polysemant = getPolysemantParallel();
-			if(!Polysemant.isEmpty()&&Polysemant!=null){
-				document.put("Polysemant", Polysemant);
+			try {
+				getTFIDF();
+				document.put("default_feature", feature_words.get(default_url));
+				String url=null;
+				if(!Polysemant.isEmpty()&&Polysemant!=null){
+					for(Document doc:Polysemant){
+						url=(String) doc.get("poly_url");
+						doc.append("poly_feature", feature_words.get(url));
+					}
+//					System.out.println(Polysemant);
+					document.put("Polysemant", Polysemant);
+				}
+			} catch (Exception e) {
+				System.out.println("get tfidf error");
 			}
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-//		System.out.println(document);
-		getTFIDF();
-//		collection.insertOne(document);//write to mongodb
 		return document;
 	}
 	
@@ -204,14 +213,14 @@ public class GetBaikeInfo extends GetBasicInfo{
 			}
 			feature_words.put(url, temp);
 		}
-		System.out.println(feature_words);
+//		System.out.println(feature_words);
 		return "";
 	}
 	
 	
 	public static void main(String args[]) throws Exception{
     	long start=System.currentTimeMillis();
-		GetBaikeInfo extract=new GetBaikeInfo("四叶草");
+		GetBaikeInfo extract=new GetBaikeInfo("一个不存在的词汇");
 //    	System.out.println("time:"+extract.getDate());
 //    	System.out.println("word:"+extract.getWord());
 //    	System.out.println("status:"+extract.getStatus());
@@ -232,7 +241,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 //    	System.out.println("default:"+(mu-start));
 //    	System.out.println("sequence:"+(middle-mu));
 //    	System.out.println("parallel:"+(pp-middle));
-		extract.writeMongo();
+		System.out.println(extract.writeMongo());
     	long pp=System.currentTimeMillis();
     	System.out.println("all:"+(pp-start));
 	}
