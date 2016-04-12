@@ -30,10 +30,13 @@ public class wordseg {
 	static{
 		getP=new HashSet<>(Arrays.asList(getProperty));
 		getN=new HashSet<>(Arrays.asList(nounWord));
+		long a=System.currentTimeMillis();
 		sgmt = new BigSegment(path);
+		long b=System.currentTimeMillis();
+		System.out.println("load segment time: "+(b-a));
 	}
 	
-	private static String trimText(String text){
+	public static String trimText(String text){
 		if(text.length() > 6003){
 			text = text.substring(0, 6001);
 		}
@@ -89,7 +92,7 @@ public class wordseg {
 	
 	public static Set<String> segWord_Set(String text_single,int mode) {
 //		System.out.println("Src:"+text_single);
-		text_single=trimText(text_single);
+//		text_single=trimText(text_single);
 //		System.out.println("Trim:"+text_single);
 		HashSet<String> hSet=new HashSet<>();//avoid replication
 		String[] textarray=text_single.split(",");
@@ -112,7 +115,7 @@ public class wordseg {
 	}
 	
 	public static HashMap<String, Triplet<Integer, Double, Double>> segWord_TF(String text_single,int mode) {//Integer means term count,the first Double means term frequence,the second Double means idf
-		text_single=trimText(text_single);
+//		text_single=trimText(text_single);
 		String[] textarray=text_single.split(",");
 		HashMap<String, Triplet<Integer, Double, Double>> tf=new HashMap<>();
 		String ttype=null;

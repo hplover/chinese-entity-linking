@@ -45,7 +45,7 @@ public class GetBaikeInfo extends GetBasicInfo{
     public static int mode=3;
     private double feature_words_ratio=0.3;
     private int docsize=1;
-    HashMap<String, List<String>> feature_words=new HashMap<>();
+    HashMap<String, Set<String>> feature_words=new HashMap<>();
     static MongoCollection<Document> collection=null;
     static{
 //		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
@@ -108,6 +108,10 @@ public class GetBaikeInfo extends GetBasicInfo{
 		String default_summary=super.getSummary();
 		if(!default_summary.isEmpty()){
 			document.put("default_summary", default_summary);
+		}
+		String default_context=super.getContext();
+		if(!default_context.isEmpty()){
+			document.put("default_context", default_context);
 		}
 		Set<String> default_label=super.getLabel();
 		if(!default_label.isEmpty()){
@@ -173,7 +177,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 			}
 			SortedSet<Entry<String, Double>> result=entriesSortedByValues(word_tfidf);
 			
-			List<String> temp=new ArrayList<>();
+			Set<String> temp=new HashSet<>();
 			int i=0;
 			int proportion=(int) (word_tfidf.size()*feature_words_ratio);
 			for(Entry<String, Double> word:result){
@@ -230,6 +234,9 @@ class PolyParallel implements Runnable {
 			document.put("poly_desc", desc);
 			if(!temp.getSummary().isEmpty()){
 				document.put("poly_summary", temp.getSummary());
+			}
+			if(!temp.getContext().isEmpty()){
+				document.put("poly_context", temp.getContext());
 			}
 			if(!temp.getLabel().isEmpty()){
 				document.put("poly_label", temp.getLabel());

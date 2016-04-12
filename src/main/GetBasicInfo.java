@@ -21,6 +21,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import TFIDF.word_tfidf;
+import WordSeg.wordseg;
 import contextExtract.contentextractor.ContentExtractor;
 import net.sf.json.JSONArray;
 /**
@@ -40,13 +42,14 @@ public class GetBasicInfo {
 		private String desc="";
 		private JSONArray infobox=new JSONArray();
 		private String summary="";
+		private String context="";
 		
 	    private int index;
 	   	static String user_agent="";
 	    static List<String> user_agents=new ArrayList<>(); 
 	    static int useragent_len=0;
 	    
-	    private boolean isDesc=false,isPoly=false,isSynonym=false,isLabel=false,isInfoBox=false,isSummary=false;
+	    private boolean isDesc=false,isPoly=false,isSynonym=false,isLabel=false,isInfoBox=false,isSummary=false,isContext=false;
 	    
 	    
 	   	static String baikePrefix="http://baike.baidu.com";
@@ -199,13 +202,18 @@ public class GetBasicInfo {
 	    	return label;
 	    }
 	    public String getContext(){
-	    	if(content!=null)
-				try {
-					return ContentExtractor.getContentByHtml(content.toString());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-	    	return "";
+	    	if(isContext||content==null){
+	    		return context;
+	    	}
+			try{
+				Elements bb=content.select("div[class=main-content]");
+				context=wordseg.trimText(bb.first().text());
+				isContext=true;
+//					return ContentExtractor.getContentByHtml(content.toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	    	return context;
 	    }
 	    public String getURL(){
 	    	return url;
@@ -264,22 +272,25 @@ public class GetBasicInfo {
 	    
 	    public static void main(String args[]) throws Exception{
 	    	long start=System.currentTimeMillis();
-	    	GetBasicInfo extract=new GetBasicInfo("四叶草");
-	    	System.out.println("time:"+extract.getDate());
-	    	System.out.println("first:");
-	    	System.out.println("word:"+extract.getWord());
-	    	System.out.println("status:"+extract.getStatus());
-	    	System.out.println("url:"+extract.getURL());
-	    	System.out.println("desc:"+extract.getDesc());
-	    	System.out.println("synonym:"+extract.getAlias());
-	    	System.out.println("summary:"+extract.getSummary());
-	    	System.out.println("content:\n\t"+extract.getContext().replace("\n", ""));
-	    	System.out.println("=============================================");
-	    	System.out.println("label:"+extract.getLabel());
-	    	System.out.println("infobox:"+extract.getInforBox());
-	    	System.out.println("polysemy:"+extract.getPoly().size()+" "+extract.getPoly().toString());
+	    	GetBasicInfo extract=new GetBasicInfo("TFBOYS");
+//	    	System.out.println("time:"+extract.getDate());
+//	    	System.out.println("first:");
+//	    	System.out.println("word:"+extract.getWord());
+//	    	System.out.println("status:"+extract.getStatus());
+//	    	System.out.println("url:"+extract.getURL());
+//	    	System.out.println("desc:"+extract.getDesc());
+//	    	System.out.println("synonym:"+extract.getAlias());
+//	    	System.out.println("summary:"+extract.getSummary());
+//	    	System.out.println("content:\n\t"+extract.getContext().replace("\n", ""));
+//	    	System.out.println("=============================================");
+//	    	System.out.println("label:"+extract.getLabel());
+//	    	System.out.println("infobox:"+extract.getInforBox());
+//	    	System.out.println("polysemy:"+extract.getPoly().size()+" "+extract.getPoly().toString());
+	    	System.out.println(extract.getContext());
 	    	long middle=System.currentTimeMillis();
-	    	
+	    	System.out.println("\n\n"+wordseg.trimText(extract.getContext()));
+	    	long bb=System.currentTimeMillis();
 	    	System.out.println("first:"+(middle-start));
+	    	System.out.println("se:"+(bb-middle));
 	    }
 }
