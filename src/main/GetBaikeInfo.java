@@ -1,6 +1,6 @@
-package main;
+package main;        
 
-import java.io.UnsupportedEncodingException;
+import java.io   .UnsupportedEncodingException;
 import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,23 +40,22 @@ import javatuples.Triplet;
 import net.sf.json.JSONArray;
 
 public class GetBaikeInfo extends GetBasicInfo{
-    public static Set<Document> documents=new HashSet<>();
-    public static HashMap<String, HashMap<String, Triplet<Integer, Double, Double>>> docs_context=new HashMap<>();
-    public static List<HashMap<String, Double>> tfs=new ArrayList<>();
+    Set<Document> documents=new HashSet<>();
+    HashMap<String, HashMap<String, Triplet<Integer, Double, Double>>> docs_context=new HashMap<>();
     public static int mode=3;
     private double feature_words_ratio=0.3;
     private int docsize=1;
     HashMap<String, List<String>> feature_words=new HashMap<>();
     static MongoCollection<Document> collection=null;
     static{
-		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
-		System.out.println("***********");
-		 
-		 // 连接到 mongodb 服务器
-	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
-	    
-	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
-	    collection=mongoDatabase.getCollection("Plover");
+//		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
+//		System.out.println("***********");
+//		 
+//		 // 连接到 mongodb 服务器
+//	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
+//	    
+//	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
+//	    collection=mongoDatabase.getCollection("Plover");
     }
 	public GetBaikeInfo(String word) throws UnsupportedEncodingException{
 		super(word);
@@ -73,7 +72,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		for(Entry<String, String> poly:polys.entrySet()){
     		url=poly.getValue();
     		desc=poly.getKey();
-    		executorService.submit(new PolyParallel(url,desc));
+    		executorService.submit(new PolyParallel(url,desc,documents,docs_context));
 		}
 		executorService.shutdown();
 		try {
@@ -83,37 +82,6 @@ public class GetBaikeInfo extends GetBasicInfo{
         }
 		return documents;
 	}
-//	public List<Document> getPolysemantSequence() throws UnsupportedEncodingException{
-//		LinkedHashMap<String, String> polys=super.getPoly();
-//		if(polys.isEmpty()){
-//			return null;
-//		}
-//		String url="",desc="";
-//		for(Entry<String, String> poly:polys.entrySet()){
-//    		url=poly.getValue();
-//    		desc=poly.getKey();
-//    		Document document = new Document();
-//			GetBasicInfo temp=new GetBasicInfo(url);
-//			document.put("poly_url", url);
-//			document.put("poly_desc", desc);
-//			if(!temp.getSummary().isEmpty()){
-//				document.put("poly_summary", temp.getSummary());
-//			}
-//			if(!temp.getLabel().isEmpty()){
-//				document.put("poly_label", temp.getLabel());
-//			}
-//			if(!temp.getInforBox().isEmpty()){
-//				document.put("poly_infobox", temp.getInforBox());
-//			}
-//			if(!temp.getContext().isEmpty()){
-//				document.put("poly_context", temp.getContext());
-//			}
-//			documents.add(document);
-//		}
-//
-//		System.out.println(documents);
-//		return null;
-//	}
 	
 	public Document writeMongo(){
 		String word=super.getWord();
@@ -161,20 +129,19 @@ public class GetBaikeInfo extends GetBasicInfo{
 						url=(String) doc.get("poly_url");
 						doc.append("poly_feature", feature_words.get(url));
 					}
-//					System.out.println(Polysemant);
 					document.put("Polysemant", Polysemant);
 				}
 			} catch (Exception e) {
 				System.out.println("get tfidf error");
 			}
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			System.out.println("get poly failed");
 		}
-		try {
-			collection.insertOne(document);
-		} catch (Exception e) {
-			System.err.println("write to mongodb failed");
-		}
+//		try {
+//			collection.insertOne(document);
+//		} catch (Exception e) {
+//			System.err.println("write to mongodb failed");
+//		}
 		
 		return document;
 	}
@@ -202,7 +169,6 @@ public class GetBaikeInfo extends GetBasicInfo{
 				String word=doc_term.getKey();
 				Triplet<Integer, Double, Double> term_data=doc_term.getValue();
 				Double tfidf=term_data.getValue1()*(1+Math.log(wordseg.alldocterms/wordseg.allterms.get(word)));
-//				System.out.println("url:"+word+"\ttfidf"+tfidf);
 				word_tfidf.put(word, tfidf);
 			}
 			SortedSet<Entry<String, Double>> result=entriesSortedByValues(word_tfidf);
@@ -219,34 +185,13 @@ public class GetBaikeInfo extends GetBasicInfo{
 			}
 			feature_words.put(url, temp);
 		}
-//		System.out.println(feature_words);
 		return "";
 	}
 	
 	
 	public static void main(String args[]) throws Exception{
     	long start=System.currentTimeMillis();
-		GetBaikeInfo extract=new GetBaikeInfo("一个不存在的词汇");
-//    	System.out.println("time:"+extract.getDate());
-//    	System.out.println("word:"+extract.getWord());
-//    	System.out.println("status:"+extract.getStatus());
-//    	System.out.println("url:"+extract.getURL());
-//    	System.out.println("desc:"+extract.getDesc());
-//    	System.out.println("alias:"+extract.getAlias());
-//    	System.out.println("summary:"+extract.getSummary());
-////    	System.out.println("content:"+extract.getContext());
-//    	System.out.println("=============================================");
-//    	System.out.println("label:"+extract.getLabel());
-//    	System.out.println("infobox:"+extract.getInforBox());
-//    	System.out.println("polysemy:"+extract.getPoly().size()+" "+extract.getPoly().toString());
-//    	long mu=System.currentTimeMillis();
-//    	extract.getPolysemantSequence();
-//    	long middle=System.currentTimeMillis();
-//
-//    	extract.getPolysemantParallel();
-//    	System.out.println("default:"+(mu-start));
-//    	System.out.println("sequence:"+(middle-mu));
-//    	System.out.println("parallel:"+(pp-middle));
+		GetBaikeInfo extract=new GetBaikeInfo("苹果");
 		System.out.println(extract.writeMongo());
     	long pp=System.currentTimeMillis();
     	System.out.println("all:"+(pp-start));
@@ -256,9 +201,13 @@ public class GetBaikeInfo extends GetBasicInfo{
 class PolyParallel implements Runnable {
 	private String url;
 	private String desc;
-	public PolyParallel(String url, String desc) {
+	Set<Document> documents=null;
+	HashMap<String, HashMap<String, Triplet<Integer, Double, Double>>> docs_context=null;
+	public PolyParallel(String url, String desc, Set<Document> documents, HashMap<String, HashMap<String, Triplet<Integer, Double, Double>>> docs_context) {
 		this.url=url;
 		this.desc=desc;
+		this.documents=documents;
+		this.docs_context=docs_context;
 	}
 
 	@Override
@@ -269,8 +218,8 @@ class PolyParallel implements Runnable {
     public void process() {
 		Document document = new Document();
 		writeDocument(url,desc,document);
-		synchronized(GetBaikeInfo.documents){
-			GetBaikeInfo.documents.add(document);
+		synchronized(documents){
+			documents.add(document);
 		}
     }
 
@@ -290,8 +239,8 @@ class PolyParallel implements Runnable {
 			}
 			if(!temp.getContext().isEmpty()){
 				HashMap<String, Triplet<Integer, Double, Double>> terms=wordseg.segWord_TF(temp.getContext(), GetBaikeInfo.mode);
-				synchronized (GetBaikeInfo.docs_context) {
-					GetBaikeInfo.docs_context.put(url, terms);
+				synchronized (docs_context) {
+					docs_context.put(url, terms);
 				}
 			}
 		} catch (UnsupportedEncodingException e) {

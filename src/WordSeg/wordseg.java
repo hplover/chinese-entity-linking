@@ -18,7 +18,7 @@ import javatuples.Pair;
 import javatuples.Triplet;
 
 public class wordseg {
-	static String path="D:/BaiduYunDownload/";
+	static String path="C:\\javarequest\\models\\nlp\\";
 	static BigSegment sgmt = null;
 	public static HashMap<String, Long> allterms=new HashMap<>();
 	public static long alldocterms=0;
@@ -85,6 +85,30 @@ public class wordseg {
 		}
 		System.out.println();
 		return ReList;
+	}
+	
+	public static Set<String> segWord_Set(String text_single,int mode) {
+//		System.out.println("Src:"+text_single);
+		text_single=trimText(text_single);
+//		System.out.println("Trim:"+text_single);
+		HashSet<String> hSet=new HashSet<>();//avoid replication
+		String[] textarray=text_single.split(",");
+//		System.out.print("Segment:");
+		for(String text:textarray){
+			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
+			for(Term result:termReList){
+				String ttype=result.nature.name();
+				System.out.print(result.word+" ");
+				if(hSet.contains(result.word))
+					continue;
+				else {
+					if(!getN.contains(ttype))
+						continue;
+					hSet.add(result.word);
+				}
+			}
+		}
+		return hSet;
 	}
 	
 	public static HashMap<String, Triplet<Integer, Double, Double>> segWord_TF(String text_single,int mode) {//Integer means term count,the first Double means term frequence,the second Double means idf
