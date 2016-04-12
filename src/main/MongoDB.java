@@ -1,13 +1,22 @@
 package main;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.text.ParseException;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.util.JSON;
+
 import org.bson.Document;
 /**
  * @author HuangDC
@@ -17,14 +26,61 @@ import org.bson.Document;
 public class MongoDB {
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws ParseException{
-		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," ...".toCharArray());
-		System.out.println("***********");
-		 
-		 // 连接到 mongodb 服务器
-	    MongoClient mongoClient = new MongoClient(new ServerAddress("...", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
+//		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," ...".toCharArray());
+//		System.out.println("***********");
+//		 
+//		 // 连接到 mongodb 服务器
+//	    MongoClient mongoClient = new MongoClient(new ServerAddress("...", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
+//	    
+//	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
+//	    MongoCollection<Document> collection=mongoDatabase.getCollection("Plover");
+//	    
+//	    
+//		Mongo mongo=new Mongo();
+//		DB db=mongo.getDB("Plover");
+		MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
+	    MongoDatabase db=mongoClient.getDatabase("Plover");
+	    MongoCollection<Document> collection=db.getCollection("plover_test");
+	    Document tt=new Document();
 	    
-	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
-	    MongoCollection<Document> collection=mongoDatabase.getCollection("Plover");
+	    List<String> a=new ArrayList<>();
+	    a.add("bb");
+	    a.add("cc");
+	    tt.put("1", 1);
+	    tt.put("2", "2");
+	    tt.put("3", a);
+	    Document yy=new Document();
+	    yy.put("99", 99);
+	    yy.put("9090", "898");
+	    tt.put("doc", yy);
+	    collection.insertOne(tt);
+		FindIterable<Document> cursor=collection.find();
+		for(Document jj:cursor){
+			System.out.println(jj.get("3"));
+		}
+		
+//		Mongo mg = new Mongo();
+//        //查询所有的Database
+//        for (String name : mg.getDatabaseNames()) {
+//            System.out.println("dbName: " + name);
+//        }
+//        
+//        DB db = mg.getDB("Plover");
+//        //查询所有的聚集集合
+//        for (String name : db.getCollectionNames()) {
+//            System.out.println("collectionName: " + name);
+//        }
+//        
+//        DBCollection users = db.getCollection("baike");
+//        
+//        //查询所有的数据
+//        DBCursor cur = users.find();
+//        while (cur.hasNext()) {
+//            System.out.println(cur.next());
+//        }
+//        System.out.println(cur.count());
+//        System.out.println(cur.getCursorId());
+//        System.out.println(JSON.serialize(cur));
 	    
 	}
 	

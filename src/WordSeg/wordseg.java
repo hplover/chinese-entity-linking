@@ -18,7 +18,7 @@ import javatuples.Pair;
 import javatuples.Triplet;
 
 public class wordseg {
-	static String path="C:\\javarequest\\models\\nlp\\";
+	static String path="D:\\BaiduYunDownload\\";
 	static BigSegment sgmt = null;
 	public static HashMap<String, Long> allterms=new HashMap<>();
 	public static long alldocterms=0;
@@ -98,7 +98,7 @@ public class wordseg {
 			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
 			for(Term result:termReList){
 				String ttype=result.nature.name();
-				System.out.print(result.word+" ");
+//				System.out.print(result.word+" ");
 				if(hSet.contains(result.word))
 					continue;
 				else {
