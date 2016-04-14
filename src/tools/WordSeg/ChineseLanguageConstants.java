@@ -1,4 +1,4 @@
-package WordSeg;
+package tools.WordSeg;
 
 public class ChineseLanguageConstants {
   public static int ORG = 0;

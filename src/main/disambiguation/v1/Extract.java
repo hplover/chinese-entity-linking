@@ -1,4 +1,4 @@
-package main;
+package main.disambiguation.v1;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -40,13 +40,12 @@ public class Extract {
 	   	static String baikePrefix="http://baike.baidu.com";
 	   	
 	    static{
-	    	Document content = null;
 	    	boolean flag=true;
 	    	String url="http://www.baidu.com";
 	    	int i=0;
 	    	while(flag){
 	    		try {
-	    			content=Jsoup.connect(url).userAgent(user_agent).get();
+	    			Jsoup.connect(url).userAgent(user_agent).get();
 	    			flag=false;
 	    		} catch (Exception e) {
 	    			i++;
@@ -145,23 +144,12 @@ public class Extract {
 	        	this.status=-1;
 	        	return null;
 	        }
-//	        Elements aElements=webpage.select("div[class=para]").select("div[label-module=para]");
-//	        Elements titles=aElements.select("a");
-//	        Elements context=aElements.select("div[class=lemma-picture text-pic layout-right]");
-//	        int titleLen=titles.size();
-//	        if(titleLen!=0&&context.size()==0){
-//	        	for(int i1=0;i1<titleLen;i1++){
-//	    			String title=titles.get(i1).text();
-//	    			if(title.split("�?").length!=2)
-//	    				break;
-//	    			title=title.split("�?")[1];
-//	        		String href=titles.get(i1).attr("href");
-//	    			this.poly.put(title, baikePrefix+href);
-//    			}
-//	        	this.status=0;
-//	        	return null;
-//	        }
 	        String list_result_re="<div class=\"para\" label-module=\"para\">\n.*?<a target=\"_blank\" href=\"(.*?)\">.*?·(.*?)</a>";
+	        String main_content="<div class=\"main-content\">";
+        	if(webpage.toString().contains(main_content)){
+        		this.status=1;
+        		return webpage;
+        	}
 	        List<ArrayList<String>> list_results=find(list_result_re, webpage.toString());
 	        if(!list_results.isEmpty()){
 	        	for(ArrayList<String> result:list_results){
@@ -169,13 +157,6 @@ public class Extract {
 	        	}
 	        	this.status=0;
 	        	return null;
-	        }
-	        else{
-	        	String main_content="<div class=\"main-content\">";
-	        	if(webpage.toString().contains(main_content)){
-	        		this.status=1;
-	        		return webpage;
-	        	}
 	        }
 	        this.status=-1;
 	        return null;
@@ -220,7 +201,6 @@ public class Extract {
 	        	Elements xx=this.content.select("span[class=taglist]");
 	        	for(int i1=0;i1<xx.size();i1++){
 	        		this.label=this.label+xx.get(i1).text()+" ";
-//	        		System.out.println(xx.get(i1).text());
 	        	}
 	    	}
 	    	return this.label;
@@ -249,7 +229,6 @@ public class Extract {
 	    
 	    private List<ArrayList<String>> find(String regex,String s) {
 	        Matcher m = Pattern.compile(regex).matcher(s);
-	        int i=0;
 	        List<ArrayList<String>> result=new ArrayList<>();
 	        int gourpcount=m.groupCount();
 	        while (m.find()) {
@@ -263,12 +242,12 @@ public class Extract {
 	    }
 	
 	    public static void main(String args[]){
-//	    	String content=Extract.crawlWebContent("http://baike.baidu.com/view/14351.htm?fromtitle=中国人民解放军国防科学技术大�?&fromid=1223537&type=syn");
+//	    	String content=Extract.crawlWebContent("http://baike.baidu.com/view/14351.htm?fromtitle=中国人民解放军国防科学技术大学&fromid=1223537&type=syn");
 //	    	System.out.println(content);
-//	    	String re="<div class=\"para\" label-module=\"para\">\n.*?<a target=\"_blank\" href=\"(.*?)\">.*?�?(.*?)</a>";
+//	    	String re="<div class=\"para\" label-module=\"para\">\n.*?<a target=\"_blank\" href=\"(.*?)\">.*?：(.*?)</a>";
 //	        find(re,content);
-//	    	中国人民解放军国防科学技术大�? 苹果 国奥 虾极霸掣
+//	    	中国人民解放军国防科学技术大学 苹果 国奥 虾极霸掣
 	    	Extract extract=new Extract();
-	    	extract.getResult("中国人民解放军国防科学技术大�?", "");
+	    	extract.getResult("中国人民解放军国防科学技术大学", "");
 	    }
 }
