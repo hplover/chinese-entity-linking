@@ -1,6 +1,7 @@
 package main.disambiguation.v2;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -9,23 +10,42 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+
 import tools.WordSeg.wordseg;
 
 public class Disambiguation {
 	ExecutorService executorService=Executors.newCachedThreadPool();
 	Set<Document> entities_info=new HashSet<>();
 	HashSet<String> entities=null;
-	int entity_size=0;
+	static MongoCredential credential =null;
+	static MongoClient mongoClient =null;
+	static MongoDatabase db =null;
+	static MongoCollection<Document> collection =null;
+	
+	static{
+		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
+		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
+		db = mongoClient.getDatabase("Plover");
+		collection = db.getCollection("BaikeInfo"); 
+	}
 	public Disambiguation(String text) {
 		long f1=System.currentTimeMillis();
 		entities=(HashSet<String>) wordseg.segWord_Set(text, 3);
-		entity_size=entities.size();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		long f2=System.currentTimeMillis();
 		System.out.println("segment: "+(f2-f1));
 	}
 	public Set<Document> getEntitiesInfo() {
 		for(String entity:entities){
-    		executorService.submit(new EntityParallel(entity,entities_info));
+			if(InMongoDB(entity.toLowerCase())){
+				continue;
+			}
+    		executorService.submit(new EntityParallel(entity,entities_info,collection));
 		}
 		executorService.shutdown();
 		try {
@@ -35,34 +55,29 @@ public class Disambiguation {
         }
 		return entities_info;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public void process(){
-		if(entities_info.isEmpty()){
-			return ;
+		
+	private boolean InMongoDB(String entity) {
+		Document search_word=new Document();
+		search_word.put("word", entity);
+		FindIterable<Document> results_word=collection.find(search_word);
+		Document search_alias=new Document();
+		search_alias.put("default_alias", entity);
+		FindIterable<Document> results_alias=collection.find(search_word);
+		boolean re=false;
+		for(Document result:results_word){
+//			System.out.println("word:"+result);
+			entities_info.add(result);
+			re=true;
 		}
-		int status;
-		HashSet<String> feature_words=null;
-		int featuresize=0;
-		for(Document entity:entities_info){
-			status=(int) entity.get("status");
-			if(status==5){
-				try {
-					feature_words=(HashSet<String>) entity.get("default_features");
-					featuresize=feature_words.size();
-					feature_words.addAll(entities);
-					if(entity_size+featuresize-feature_words.size()>0){
-						
-					}
-				} catch (Exception e) {
-					// TODO: handle exception
-				}
-				
-			}
+		for(Document result:results_alias){
+//			System.out.println("alias:"+result);
+			entities_info.add(result);
+			re=true;
 		}
+		if(re)
+		System.out.println(entity+" found");
+		return re;
 	}
-	
-	
 	public static void main(String args[]){
 		long s=System.currentTimeMillis();
 		String text="你认为tfboys拥有最强大的粉丝群吗？没错！为什么？因为只要是四叶草看了这条微博都会转（来自四叶草）";
@@ -75,9 +90,11 @@ public class Disambiguation {
 class EntityParallel implements Runnable{
 	private String entity="";
 	Set<Document> entities_info=new HashSet<>();
-	public EntityParallel(String entity, Set<Document> entities_info) {
+	private MongoCollection<Document> collection;
+	public EntityParallel(String entity, Set<Document> entities_info, MongoCollection<Document> collection) {
 		this.entity=entity;
 		this.entities_info=entities_info;
+		this.collection=collection;
 	}
 
 	@Override
@@ -89,9 +106,9 @@ class EntityParallel implements Runnable{
 		GetBaikeInfo temp;
 		try {
 			temp = new GetBaikeInfo(entity);
-			Document xx=temp.writeMongo();
 //			System.out.println(xx);
 			synchronized (entities_info) {
+				Document xx=temp.writeMongo(collection);
 				entities_info.add(xx);
 			}
 //			System.out.println(entities_info);

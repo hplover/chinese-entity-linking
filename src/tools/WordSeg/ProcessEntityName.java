@@ -19,7 +19,7 @@ import java.util.List;
 
 public class ProcessEntityName {
 	public static void main(String [] args) throws IOException{
-		File file=new File("E://entityName");
+		File file=new File("E://entityOut_v2");
 		@SuppressWarnings("resource")
 		BufferedReader bre = new BufferedReader(new FileReader(file));//此时获取到的bre就是整个文件的缓存流
 		String xx="";
@@ -30,10 +30,8 @@ public class ProcessEntityName {
 		while ((xx = bre.readLine())!= null) // 判断最后一行不存在，为空结束循环
 		{
 			i_sum++;
-			xx=LangUtils.replaceAnsiMarkWithSpace(xx);
-			if(xx.isEmpty()){
-				continue;
-			}
+//			xx=LangUtils.replaceAnsiMarkWithSpace(xx);
+			xx=xx.toLowerCase();
 			if(i_sum%1000==0){
 				System.out.println("processing... "+i_norepeat+"/"+i_sum);
 			}
@@ -50,7 +48,7 @@ public class ProcessEntityName {
 		}
 //		Iterator<String> iterator=hSet.iterator();
 		i_sum=0;
-		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("E://entityOut_v2"), "utf-8"));
+		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("E://entityOut_v3"), "utf-8"));
 //		while(iterator.hasNext()){
 //			
 //			xx=iterator.next();
@@ -58,7 +56,7 @@ public class ProcessEntityName {
 //		}
 		for(String ll:result){
 			i_sum++;
-			if(i_sum%1000==0){
+			if(i_sum%100000==0){
 				System.out.println("writing... "+i_sum+"/"+i_norepeat);
 			}
 			writer.write(ll+"\n");

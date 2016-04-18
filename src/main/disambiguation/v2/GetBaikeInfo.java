@@ -1,6 +1,7 @@
 package main.disambiguation.v2;        
 
 import java.io   .UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,7 +18,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+
 import net.sf.json.JSONArray;
 import tools.WordSeg.wordseg;
 import tools.javatuples.Triplet;
@@ -29,17 +35,17 @@ public class GetBaikeInfo extends GetBasicInfo{
     private double feature_words_ratio=0.3;
     private int docsize=1;
     HashMap<String, Set<String>> feature_words=new HashMap<>();
-    static MongoCollection<Document> collection=null;
-    static{
-//		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin"," bjgdFristDB2016".toCharArray());
-//		System.out.println("***********");
-//		 
-//		 // 连接到 mongodb 服务器
-//	    MongoClient mongoClient = new MongoClient(new ServerAddress("218.76.52.43", 3006), Arrays.asList(credential));	//3006设置为Mongodb端口号
-//	    
-//	    MongoDatabase mongoDatabase = mongoClient.getDatabase("BaikeInfo");
-//	    collection=mongoDatabase.getCollection("Plover");
-    }
+	static MongoCredential credential =null;
+	static MongoClient mongoClient =null;
+	static MongoDatabase db =null;
+	static MongoCollection<Document> collection =null;
+	
+	static{
+		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
+		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
+		db = mongoClient.getDatabase("Plover");
+		collection = db.getCollection("BaikeInfo"); 
+	}
 	public GetBaikeInfo(String word) throws UnsupportedEncodingException{
 		super(word);
 		docs_context.put(super.getURL(), wordseg.segWord_TF(super.getContext(), mode));
@@ -66,7 +72,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		return documents;
 	}
 	
-	public Document writeMongo(){
+	public Document writeMongo(MongoCollection<Document> collection){
 		String word=super.getWord();
 		Document document=new Document();
 		Date date=super.getDate();
@@ -124,11 +130,11 @@ public class GetBaikeInfo extends GetBasicInfo{
 		} catch (UnsupportedEncodingException e) {
 			System.out.println("get poly failed");
 		}
-//		try {
-//			collection.insertOne(document);
-//		} catch (Exception e) {
-//			System.err.println("write to mongodb failed");
-//		}
+		try {
+			collection.insertOne(document);
+		} catch (Exception e) {
+			System.err.println("write to mongodb failed");
+		}
 		
 		return document;
 	}
@@ -179,7 +185,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 	public static void main(String args[]) throws Exception{
     	long start=System.currentTimeMillis();
 		GetBaikeInfo extract=new GetBaikeInfo("苹果");
-		System.out.println(extract.writeMongo());
+		System.out.println(extract.writeMongo(collection));
     	long pp=System.currentTimeMillis();
     	System.out.println("all:"+(pp-start));
 	}

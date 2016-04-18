@@ -198,19 +198,26 @@ public class GetBasicInfo {
 	    	isLabel=true;
 	    	return label;
 	    }
-	    public String getContext(){
+	    @SuppressWarnings("finally")
+		public String getContext(){
 	    	if(isContext||content==null){
 	    		return context;
 	    	}
 			try{
 				Elements bb=content.select("div[class=main-content]");
-				context=wordseg.trimText(bb.first().text());
-				isContext=true;
-//					return ContentExtractor.getContentByHtml(content.toString());
+				try {
+					context=wordseg.trimText(bb.first().text());
+				} catch (Exception e) {
+					System.err.println("class=main-content not found");
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-	    	return context;
+			finally {
+				isContext=true;
+				return context;
+			}
+	    	
 	    }
 	    public String getURL(){
 	    	return url;
@@ -234,6 +241,9 @@ public class GetBasicInfo {
 					String property = dtList.get(i).text().replaceAll("[^\u4e00-\u9fa5]", "");
 					String value = ddList.get(i).text().replaceAll("\"", "");
 					String[] valueTokens = value.split(",|;|；|、|，|。");
+					if(valueTokens.length==0){
+						continue;
+					}
 					if (valueTokens[valueTokens.length-1].endsWith("等")) {
 						valueTokens[valueTokens.length-1] = valueTokens[valueTokens.length-1].replace("等", "");
 					}
