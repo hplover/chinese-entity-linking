@@ -3,6 +3,7 @@ package main.disambiguation.v2;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,6 +33,7 @@ public class Disambiguation {
 		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
 		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
 		db = mongoClient.getDatabase("Plover");
+		System.out.println("collection:"+db.listCollectionNames());
 		collection = db.getCollection("BaikeInfo"); 
 	}
 	public Disambiguation(String text) {
@@ -41,46 +43,48 @@ public class Disambiguation {
 		System.out.println("segment: "+(f2-f1));
 	}
 	public Set<Document> getEntitiesInfo() {
+		boolean isParallel=false;
 		for(String entity:entities){
 			if(InMongoDB(entity.toLowerCase())){
 				continue;
 			}
-    		executorService.submit(new EntityParallel(entity,entities_info,collection));
+    		executorService.submit(new EntityParallel(entity.toLowerCase(),entities_info,collection));
+    		isParallel=true;
 		}
-		executorService.shutdown();
-		try {
-            executorService.awaitTermination(1, TimeUnit.DAYS);
-        } catch (InterruptedException ex) {
-            System.out.println(ex.getMessage());
-        }
+		if(isParallel){
+			executorService.shutdown();
+			try {
+	            executorService.awaitTermination(1, TimeUnit.DAYS);
+	        } catch (InterruptedException ex) {
+	            System.out.println(ex.getMessage());
+	        }
+		}
 		return entities_info;
 	}
 		
 	private boolean InMongoDB(String entity) {
 		Document search_word=new Document();
 		search_word.put("word", entity);
-		FindIterable<Document> results_word=collection.find(search_word);
 		Document search_alias=new Document();
 		search_alias.put("default_alias", entity);
-		FindIterable<Document> results_alias=collection.find(search_word);
+		Document results_word=collection.find(search_word).first();
+		Document results_alias=collection.find(search_alias).first();
 		boolean re=false;
-		for(Document result:results_word){
-//			System.out.println("word:"+result);
-			entities_info.add(result);
+		if(results_alias!=null&&results_alias.size()!=0){
+			System.out.println(entity+" found alias "+results_alias);
+			entities_info.add(results_alias);
 			re=true;
 		}
-		for(Document result:results_alias){
-//			System.out.println("alias:"+result);
-			entities_info.add(result);
+		if(results_word!=null&&results_word.size()!=0){
+			System.out.println(entity+" found word "+results_word);
+			entities_info.add(results_word);
 			re=true;
 		}
-		if(re)
-		System.out.println(entity+" found");
 		return re;
 	}
 	public static void main(String args[]){
 		long s=System.currentTimeMillis();
-		String text="你认为tfboys拥有最强大的粉丝群吗？没错！为什么？因为只要是四叶草看了这条微博都会转（来自四叶草）";
+		String text="苹果";
 		Disambiguation bb=new Disambiguation(text);
 		System.out.println("entities info is "+bb.getEntitiesInfo());
 		long e=System.currentTimeMillis();

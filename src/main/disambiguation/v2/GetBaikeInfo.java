@@ -170,7 +170,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 			int i=0;
 			int proportion=(int) (word_tfidf.size()*feature_words_ratio);
 			for(Entry<String, Double> word:result){
-				temp.add(word.getKey());
+				temp.add(word.getKey()+":"+word.getValue());
 				i++;
 				if(i>proportion){
 					break;

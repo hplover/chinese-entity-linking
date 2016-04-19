@@ -18,7 +18,7 @@ import tools.javatuples.Triplet;
 
 
 public class wordseg {
-	static String path="C:\\javarequest\\models\\nlp\\";
+//	static String path="C:\\javarequest\\models\\nlp\\";
 	static BigSegment sgmt = null;
 	public static HashMap<String, Long> allterms=new HashMap<>();
 	public static long alldocterms=0;
@@ -31,7 +31,7 @@ public class wordseg {
 		getP=new HashSet<>(Arrays.asList(getProperty));
 		getN=new HashSet<>(Arrays.asList(nounWord));
 		long a=System.currentTimeMillis();
-		sgmt = new BigSegment(path);
+		sgmt = new BigSegment("");
 		long b=System.currentTimeMillis();
 		System.out.println("load segment time: "+(b-a));
 	}
@@ -163,10 +163,10 @@ public class wordseg {
 //		String text="新时期生理生态学的发展，面临分子生物学和组学（-omics）等学科和技术手段的挑战，同时新学科和新技术发展也为生理生态学的发展提供了新的机遇。不同动物类群适应各种不同环境（尤其是极端环境）的机理，需要从各个组织层次上、各学科交叉进行整合研究。动物对不断变化着的环境的生理功能的调节和改变及其适应和进化机理，将是生理生态学未来的重要研究主题。我们也看到，生理生态学在动物行为学、保护生物学、种群生态学和群落生态学中地位和作用，显得日趋重要。保护生理学（conservation physiology）、代谢生态学（metabolicecology）和宏生理学（macrophysiology）等新领域的兴起，也进一步充实和拓展了生理生态学的内涵。";
 //		String text="多聚酶链式反应（PCR）是一项用于体外复制DNA的极为通用的技术。简而言之，PCR技术可以使单链DNA被复制数百万次，也允许用事先确定好的方式对被复制的DNA序列进行改动。例如，PCR技术可以用于引入限制性酶切位点，或者对特定的DNA碱基进行突变（改变）。PCR技术还可以用于从cDNA文库获得特定的DNA片段，或者从另一个角度，用于判断一个cDNA文库中是否含有特定的DNA片段。";
 		System.out.println(text);
-//		List<Result> result=xx.segWord_Result(text,3);
-//		for(Result tt:result){
-//			System.out.println(tt.keyword+"\t"+tt.type);
-//		}
+		List<Result> result=xx.segWord_Result(text,3);
+		for(Result tt:result){
+			System.out.println(tt.keyword+"\t"+tt.type);
+		}
 		List<Result> result1=xx.segWord_Result(text,3);
 //		for(Entry<String, Triplet<Integer, Double, Double>> tt:result1.entrySet()){
 //			tt.getValue().add(tuple)

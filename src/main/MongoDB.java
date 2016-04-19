@@ -96,16 +96,17 @@ public class MongoDB {
     		int i=1;
     		while ((line = br.readLine()) != null) {
     			i++;
-    	    	if(line.equals("向远方")){
+    	    	if(line.equals("四叶草")){
     	    		break;
     	    	}
     	    }
-    	    while ((line = br.readLine()) != null) {
-//    	    	System.out.println(line);
-    	    	new GetBaikeInfo(line).writeMongo(collection);
-    	    	System.out.println(new Date()+"\tinsert\t" + line+"\t"+(i++));
-//    	    	Thread.sleep(1000);
-    		}
+    		System.out.println(i);
+//    	    while ((line = br.readLine()) != null) {
+////    	    	System.out.println(line);
+//    	    	new GetBaikeInfo(line).writeMongo(collection);
+//    	    	System.out.println(new Date()+"\tinsert\t" + line+"\t"+(i++));
+////    	    	Thread.sleep(1000);
+//    		}
     	}
 		
 		
