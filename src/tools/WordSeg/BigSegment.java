@@ -21,14 +21,16 @@ public class BigSegment {
 	public BigSegment(String path) {
 		super();
 		HanLP.Config.ShowTermNature = true;
-		nShortSegment.enableCustomDictionary(false).enablePlaceRecognize(true)
+		nShortSegment.enableCustomDictionary(true).enablePlaceRecognize(true)
 				.enableOrganizationRecognize(true);
+		/*
 		synchronized (isInited) {
 			if (!isInited) {
 				isInited = true;
 				String prefix = path ;
 				HanLP.Config.BiGramDictionaryPath = prefix
 						+ HanLP.Config.BiGramDictionaryPath;
+				System.out.println(HanLP.Config.BiGramDictionaryPath);
 				HanLP.Config.CharTablePath = prefix
 						+ HanLP.Config.CharTablePath;
 				HanLP.Config.CharTypePath = prefix + HanLP.Config.CharTypePath;
@@ -83,6 +85,7 @@ public class BigSegment {
 						+ HanLP.Config.WordNatureModelPath;
 			}
 		}
+		*/
 	}
 
 	/**
