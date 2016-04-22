@@ -1,4 +1,4 @@
-package main.disambiguation.v1;
+package main.disambiguation.v1_NoRecordGetBySequence;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

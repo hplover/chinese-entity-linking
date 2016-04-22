@@ -1,4 +1,4 @@
-package main.disambiguation.v2;
+package main.disambiguation.v2_recordNameGetByParallel;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -71,12 +71,12 @@ public class Disambiguation {
 		Document results_alias=collection.find(search_alias).first();
 		boolean re=false;
 		if(results_alias!=null&&results_alias.size()!=0){
-			System.out.println(entity+" found alias "+results_alias);
+			System.out.println(entity+" found alias ");
 			entities_info.add(results_alias);
 			re=true;
 		}
 		if(results_word!=null&&results_word.size()!=0){
-			System.out.println(entity+" found word "+results_word);
+			System.out.println(entity+" found word ");
 			entities_info.add(results_word);
 			re=true;
 		}

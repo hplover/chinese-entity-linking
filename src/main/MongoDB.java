@@ -1,47 +1,41 @@
 package main;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import javax.xml.crypto.Data;
+import javax.sound.sampled.Line;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.text.ParseException;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import main.disambiguation.v2.GetBaikeInfo;
+import main.disambiguation.v3_recordEntityGetByParallel.GetBaikeInfo;
 
-import org.bson.Document;
+//import main.disambiguation.
+
 /**
  * @author HuangDC
  * @date 2016年4月3日
  * @description 
  */
 public class MongoDB {
-	PrintStream bb=System.out;
-	@SuppressWarnings("resource")
+//	static PrintStream bb=System.out;
+
 	public static void main(String[] args) throws ParseException, UnsupportedEncodingException, IOException, InterruptedException{
 		String file="e://entityOut_v2";
-		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
-		MongoClient mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
-		MongoDatabase db = mongoClient.getDatabase("Plover");
-		System.out.println(db);
-		for (String name : db.listCollectionNames()) {
-			System.out.println("collection:"+name);
-	  	}
-		MongoCollection<Document> collection = db.getCollection("BaikeInfo"); 
-       System.out.println();
+//		MongoCredential credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
+//		MongoClient mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
+//		MongoDatabase db = mongoClient.getDatabase("Plover");
+//		System.out.println(db);
+//		for (String name : db.listCollectionNames()) {
+//			System.out.println("collection:"+name);
+//	  	} 
+//        System.out.println();
        
 //       Document find=new Document();
 //       find.put("word", "锁定");
@@ -50,14 +44,6 @@ public class MongoDB {
 //       for(Document bb:xx){
 //    	   System.out.println(bb);
 //       }
-       
-       
-       
-       
-       
-       
-       
-       
        
        
 //     //获取指定Collection中所有的索引
@@ -90,53 +76,53 @@ public class MongoDB {
 //                System.out.println(ex.getMessage());
 //            }
 //    	}
+		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("filename.txt"), "utf-8"));
+//		new GetBaikeInfo("国防科大",null).writeMongo();
 		
+		String line = null;
+    	int i=1;
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-    	    String line;
-    		int i=1;
     		while ((line = br.readLine()) != null) {
     			i++;
-    	    	if(line.equals("四叶草")){
+    	    	if(line.equals("王宁")){
     	    		break;
     	    	}
     	    }
-    		System.out.println(i);
-//    	    while ((line = br.readLine()) != null) {
-////    	    	System.out.println(line);
-//    	    	new GetBaikeInfo(line).writeMongo(collection);
-//    	    	System.out.println(new Date()+"\tinsert\t" + line+"\t"+(i++));
-////    	    	Thread.sleep(1000);
-//    		}
+    	    while ((line = br.readLine()) != null) {
+//    	    	System.out.println(line);
+    	    	new GetBaikeInfo(line,null).writeMongo();
+    	    	System.out.println(new Date()+"\tinsert\t" + line+"\t"+(i++));
+//    	    	Thread.sleep(1000);
+    		}
     	}
-		
-		
-		
-		
-   
-	}
-}
-class CrawlBaikeParallel implements Runnable{
-	static int i=1;
-	String line="";
-	MongoCollection<Document> collection=null;
-	public CrawlBaikeParallel(String line,MongoCollection<Document> collection) {
-		this.line=line;
-		this.collection=collection;
-	}
-	@Override
-	public void run() {
-		process();
-	}
-	void process(){
-		GetBaikeInfo temp;
-		try {
-			temp = new GetBaikeInfo(line);
-			synchronized (collection) {
-				temp.writeMongo(collection);
-				System.out.println(new Date()+"\tinsert " + line+"\t"+(i++));
-			}
-		} catch (UnsupportedEncodingException e) {
-			System.err.println("processing error "+ line);
+		finally {
+			System.out.println(line+"\t"+i);
+			writer.write(line+"\t"+i+"\n");
 		}
 	}
 }
+//class CrawlBaikeParallel implements Runnable{
+//	static int i=1;
+//	String line="";
+//	MongoCollection<Document> collection=null;
+//	public CrawlBaikeParallel(String line,MongoCollection<Document> collection) {
+//		this.line=line;
+//		this.collection=collection;
+//	}
+//	@Override
+//	public void run() {
+//		process();
+//	}
+//	void process(){
+//		GetBaikeInfo temp;
+//		try {
+//			temp = new GetBaikeInfo(line,null);
+//			synchronized (collection) {
+//				temp.writeMongo(collection);
+//				System.out.println(new Date()+"\tinsert " + line+"\t"+(i++));
+//			}
+//		} catch (UnsupportedEncodingException e) {
+//			System.err.println("processing error "+ line);
+//		}
+//	}
+//}

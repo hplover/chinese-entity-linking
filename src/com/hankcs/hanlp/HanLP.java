@@ -66,7 +66,7 @@ public class HanLP
         /**
          * 用户自定义词典路径
          */
-        public static String CustomDictionaryPath[] = new String[]{root+"data/dictionary/custom/CustomDictionary.txt"};
+        public static String CustomDictionaryPath[] = new String[]{root+"data/dictionary/custom/CustomDictionary.txt",root+"data/dictionary/custom/hdcdic.txt"};
         /**
          * 2元语法词典路径
          */
@@ -172,94 +172,94 @@ public class HanLP
          */
         public static boolean Normalization = false;
 
-        static
-        {
-            // 自动读取配置
-            Properties p = new Properties();
-            try
-            {
-                ClassLoader loader = Thread.currentThread().getContextClassLoader();
-                if (loader == null)
-                {  // IKVM (v.0.44.0.5) doesn't set context classloader
-                    loader = HanLP.Config.class.getClassLoader();
-                }
-                p.load(new InputStreamReader(Predefine.HANLP_PROPERTIES_PATH == null ?
-                        loader.getResourceAsStream("hanlp.properties") :
-                        new FileInputStream(Predefine.HANLP_PROPERTIES_PATH)
-                        , "UTF-8"));
-                String root = p.getProperty("root", "").replaceAll("\\\\", "/");
-                if (!root.endsWith("/")) root += "/";
-                root="C:/javarequest/models/nlp/";
-                CoreDictionaryPath = root + p.getProperty("CoreDictionaryPath", CoreDictionaryPath);
-                CoreDictionaryTransformMatrixDictionaryPath = root + p.getProperty("CoreDictionaryTransformMatrixDictionaryPath", CoreDictionaryTransformMatrixDictionaryPath);
-                BiGramDictionaryPath = root + p.getProperty("BiGramDictionaryPath", BiGramDictionaryPath);
-                CoreStopWordDictionaryPath = root + p.getProperty("CoreStopWordDictionaryPath", CoreStopWordDictionaryPath);
-                CoreSynonymDictionaryDictionaryPath = root + p.getProperty("CoreSynonymDictionaryDictionaryPath", CoreSynonymDictionaryDictionaryPath);
-                PersonDictionaryPath = root + p.getProperty("PersonDictionaryPath", PersonDictionaryPath);
-                PersonDictionaryTrPath = root + p.getProperty("PersonDictionaryTrPath", PersonDictionaryTrPath);
-                String[] pathArray = p.getProperty("CustomDictionaryPath", "dictionary/custom/CustomDictionary.txt").split(";");
-                String prePath = root;
-                for (int i = 0; i < pathArray.length; ++i)
-                {
-                    if (pathArray[i].startsWith(" "))
-                    {
-                        pathArray[i] = prePath + pathArray[i].trim();
-                    }
-                    else
-                    {
-                        pathArray[i] = root + pathArray[i];
-                        int lastSplash = pathArray[i].lastIndexOf('/');
-                        if (lastSplash != -1)
-                        {
-                            prePath = pathArray[i].substring(0, lastSplash + 1);
-                        }
-                    }
-                }
-                CustomDictionaryPath = pathArray;
-                TraditionalChineseDictionaryPath = root + p.getProperty("TraditionalChineseDictionaryPath", TraditionalChineseDictionaryPath);
-                SYTDictionaryPath = root + p.getProperty("SYTDictionaryPath", SYTDictionaryPath);
-                PinyinDictionaryPath = root + p.getProperty("PinyinDictionaryPath", PinyinDictionaryPath);
-                TranslatedPersonDictionaryPath = root + p.getProperty("TranslatedPersonDictionaryPath", TranslatedPersonDictionaryPath);
-                JapanesePersonDictionaryPath = root + p.getProperty("JapanesePersonDictionaryPath", JapanesePersonDictionaryPath);
-                PlaceDictionaryPath = root + p.getProperty("PlaceDictionaryPath", PlaceDictionaryPath);
-                PlaceDictionaryTrPath = root + p.getProperty("PlaceDictionaryTrPath", PlaceDictionaryTrPath);
-                OrganizationDictionaryPath = root + p.getProperty("OrganizationDictionaryPath", OrganizationDictionaryPath);
-                OrganizationDictionaryTrPath = root + p.getProperty("OrganizationDictionaryTrPath", OrganizationDictionaryTrPath);
-                CharTypePath = root + p.getProperty("CharTypePath", CharTypePath);
-                CharTablePath = root + p.getProperty("CharTablePath", CharTablePath);
-                WordNatureModelPath = root + p.getProperty("WordNatureModelPath", WordNatureModelPath);
-                MaxEntModelPath = root + p.getProperty("MaxEntModelPath", MaxEntModelPath);
-                NNParserModelPath = root + p.getProperty("NNParserModelPath", NNParserModelPath);
-                CRFSegmentModelPath = root + p.getProperty("CRFSegmentModelPath", CRFSegmentModelPath);
-                CRFDependencyModelPath = root + p.getProperty("CRFDependencyModelPath", CRFDependencyModelPath);
-                HMMSegmentModelPath = root + p.getProperty("HMMSegmentModelPath", HMMSegmentModelPath);
-                ShowTermNature = "true".equals(p.getProperty("ShowTermNature", "true"));
-                Normalization = "true".equals(p.getProperty("Normalization", "false"));
-            }
-            catch (Exception e)
-            {
-                StringBuilder sbInfo = new StringBuilder("========Tips========\n请将HanLP.properties放在下列目录：\n"); // 打印一些友好的tips
-                String classPath = (String) System.getProperties().get("java.class.path");
-                if (classPath != null)
-                {
-                    for (String path : classPath.split(";"))
-                    {
-                        if (new File(path).isDirectory())
-                        {
-                            sbInfo.append(path).append('\n');
-                        }
-                    }
-                }
-                sbInfo.append("Web项目则请放到下列目录：\n" +
-                                      "Webapp/WEB-INF/lib\n" +
-                                      "Webapp/WEB-INF/classes\n" +
-                                      "Appserver/lib\n" +
-                                      "JRE/lib\n");
-                sbInfo.append("并且编辑root=PARENT/path/to/your/data\n");
-                sbInfo.append("现在HanLP将尝试从").append(System.getProperties().get("user.dir")).append("读取data……");
-                logger.severe("没有找到HanLP.properties，可能会导致找不到data\n" + sbInfo);
-            }
-        }
+//        static
+//        {
+//            // 自动读取配置
+//            Properties p = new Properties();
+//            try
+//            {
+//                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+//                if (loader == null)
+//                {  // IKVM (v.0.44.0.5) doesn't set context classloader
+//                    loader = HanLP.Config.class.getClassLoader();
+//                }
+//                p.load(new InputStreamReader(Predefine.HANLP_PROPERTIES_PATH == null ?
+//                        loader.getResourceAsStream("hanlp.properties") :
+//                        new FileInputStream(Predefine.HANLP_PROPERTIES_PATH)
+//                        , "UTF-8"));
+//                String root = p.getProperty("root", "").replaceAll("\\\\", "/");
+//                if (!root.endsWith("/")) root += "/";
+//                root="C:/javarequest/models/nlp/";
+//                CoreDictionaryPath = root + p.getProperty("CoreDictionaryPath", CoreDictionaryPath);
+//                CoreDictionaryTransformMatrixDictionaryPath = root + p.getProperty("CoreDictionaryTransformMatrixDictionaryPath", CoreDictionaryTransformMatrixDictionaryPath);
+//                BiGramDictionaryPath = root + p.getProperty("BiGramDictionaryPath", BiGramDictionaryPath);
+//                CoreStopWordDictionaryPath = root + p.getProperty("CoreStopWordDictionaryPath", CoreStopWordDictionaryPath);
+//                CoreSynonymDictionaryDictionaryPath = root + p.getProperty("CoreSynonymDictionaryDictionaryPath", CoreSynonymDictionaryDictionaryPath);
+//                PersonDictionaryPath = root + p.getProperty("PersonDictionaryPath", PersonDictionaryPath);
+//                PersonDictionaryTrPath = root + p.getProperty("PersonDictionaryTrPath", PersonDictionaryTrPath);
+//                String[] pathArray = p.getProperty("CustomDictionaryPath", "dictionary/custom/CustomDictionary.txt").split(";");
+//                String prePath = root;
+//                for (int i = 0; i < pathArray.length; ++i)
+//                {
+//                    if (pathArray[i].startsWith(" "))
+//                    {
+//                        pathArray[i] = prePath + pathArray[i].trim();
+//                    }
+//                    else
+//                    {
+//                        pathArray[i] = root + pathArray[i];
+//                        int lastSplash = pathArray[i].lastIndexOf('/');
+//                        if (lastSplash != -1)
+//                        {
+//                            prePath = pathArray[i].substring(0, lastSplash + 1);
+//                        }
+//                    }
+//                }
+//                CustomDictionaryPath = pathArray;
+//                TraditionalChineseDictionaryPath = root + p.getProperty("TraditionalChineseDictionaryPath", TraditionalChineseDictionaryPath);
+//                SYTDictionaryPath = root + p.getProperty("SYTDictionaryPath", SYTDictionaryPath);
+//                PinyinDictionaryPath = root + p.getProperty("PinyinDictionaryPath", PinyinDictionaryPath);
+//                TranslatedPersonDictionaryPath = root + p.getProperty("TranslatedPersonDictionaryPath", TranslatedPersonDictionaryPath);
+//                JapanesePersonDictionaryPath = root + p.getProperty("JapanesePersonDictionaryPath", JapanesePersonDictionaryPath);
+//                PlaceDictionaryPath = root + p.getProperty("PlaceDictionaryPath", PlaceDictionaryPath);
+//                PlaceDictionaryTrPath = root + p.getProperty("PlaceDictionaryTrPath", PlaceDictionaryTrPath);
+//                OrganizationDictionaryPath = root + p.getProperty("OrganizationDictionaryPath", OrganizationDictionaryPath);
+//                OrganizationDictionaryTrPath = root + p.getProperty("OrganizationDictionaryTrPath", OrganizationDictionaryTrPath);
+//                CharTypePath = root + p.getProperty("CharTypePath", CharTypePath);
+//                CharTablePath = root + p.getProperty("CharTablePath", CharTablePath);
+//                WordNatureModelPath = root + p.getProperty("WordNatureModelPath", WordNatureModelPath);
+//                MaxEntModelPath = root + p.getProperty("MaxEntModelPath", MaxEntModelPath);
+//                NNParserModelPath = root + p.getProperty("NNParserModelPath", NNParserModelPath);
+//                CRFSegmentModelPath = root + p.getProperty("CRFSegmentModelPath", CRFSegmentModelPath);
+//                CRFDependencyModelPath = root + p.getProperty("CRFDependencyModelPath", CRFDependencyModelPath);
+//                HMMSegmentModelPath = root + p.getProperty("HMMSegmentModelPath", HMMSegmentModelPath);
+//                ShowTermNature = "true".equals(p.getProperty("ShowTermNature", "true"));
+//                Normalization = "true".equals(p.getProperty("Normalization", "false"));
+//            }
+//            catch (Exception e)
+//            {
+//                StringBuilder sbInfo = new StringBuilder("========Tips========\n请将HanLP.properties放在下列目录：\n"); // 打印一些友好的tips
+//                String classPath = (String) System.getProperties().get("java.class.path");
+//                if (classPath != null)
+//                {
+//                    for (String path : classPath.split(";"))
+//                    {
+//                        if (new File(path).isDirectory())
+//                        {
+//                            sbInfo.append(path).append('\n');
+//                        }
+//                    }
+//                }
+//                sbInfo.append("Web项目则请放到下列目录：\n" +
+//                                      "Webapp/WEB-INF/lib\n" +
+//                                      "Webapp/WEB-INF/classes\n" +
+//                                      "Appserver/lib\n" +
+//                                      "JRE/lib\n");
+//                sbInfo.append("并且编辑root=PARENT/path/to/your/data\n");
+//                sbInfo.append("现在HanLP将尝试从").append(System.getProperties().get("user.dir")).append("读取data……");
+//                logger.severe("没有找到HanLP.properties，可能会导致找不到data\n" + sbInfo);
+//            }
+//        }
 
         /**
          * 开启调试模式(会降低性能)

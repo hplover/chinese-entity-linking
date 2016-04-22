@@ -1,28 +1,27 @@
-package main.disambiguation.v2;
+package main.disambiguation.v2_recordNameGetByParallel;
 
-import java.security.KeyStore.Entry;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
+import org.bson.types.BasicBSONList;
 
-import com.hankcs.hanlp.HanLP;
+import com.mongodb.*;
+
+import net.sf.json.JSONArray;
+
+/**
+ * error:can't convert to the wanted type
+ * @author HuangDC
+ *
+ */
+
 
 public class test_Disambiguation {
-		static HashMap<String, String> reDocuments=new HashMap<>();
-//	static MongoCredential credential =null;
-//	static MongoClient mongoClient =null;
-//	static MongoDatabase db =null;
-//	static MongoCollection<Document> collection =null;
-//	
-//	static{
-//		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
-//		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
-//		db = mongoClient.getDatabase("Plover");
-//		collection = db.getCollection("BaikeInfo"); 
-//	}
+	static HashMap<String, String> reDocuments=new HashMap<>();
+
 	
 		
 	@SuppressWarnings("unchecked")
@@ -31,6 +30,8 @@ public class test_Disambiguation {
 		String word=doc.getString("word");
 		String default_url=doc.getString("default_url");
 		String default_context=doc.getString("default_context");
+		ArrayList<String> bb=(ArrayList<String>) doc.get("default_label");
+		System.out.println("list:"+bb);
 		int status=doc.getInteger("status");
 		if(status==-1){
 			return ;
@@ -49,24 +50,30 @@ public class test_Disambiguation {
 			}
 			return;
 		}
-		Set<Document> polys=(Set<Document>) doc.get("Polysemant");//convert failed
-		String poly_context=null;
-		String poly_url=null;
-		for(Document poly:polys){
-			//需要改进的地方：计算实体与实体之间的关系后在决定对应的是哪个实体
-			poly_context=poly.getString("poly_context");
-			poly_url=poly.getString("poly_url");
-			int target_temp=0;
-			for(Document adoc:documents){
-				if(word!=adoc.getString("word")){
-					target_temp=target_temp+StringUtils.countMatches(poly_context,adoc.getString("word"));
-				}
-			}
-			if(target_temp>target){
-				target=target_temp;
-				target_url=poly_url;
-			}
-		}
+		ArrayList<Document> polys=(ArrayList<Document>) doc.get("Polysemant");//convert failed
+		System.out.println(polys);
+//		ArrayList<JSONArray> infobox=(ArrayList<JSONArray>)doc.get("default_infobox");
+//		for(JSONArray jk:infobox){
+//			System.out.println(jk.get(0)+"\t"+jk.get(1));
+//		}
+//		System.out.println(infobox);
+//		String poly_context=null;
+//		String poly_url=null;
+//		for(Document poly:polys){
+//			//需要改进的地方：计算实体与实体之间的关系后在决定对应的是哪个实体
+//			poly_context=poly.getString("poly_context");
+//			poly_url=poly.getString("poly_url");
+//			int target_temp=0;
+//			for(Document adoc:documents){
+//				if(word!=adoc.getString("word")){
+//					target_temp=target_temp+StringUtils.countMatches(poly_context,adoc.getString("word"));
+//				}
+//			}
+//			if(target_temp>target){
+//				target=target_temp;
+//				target_url=poly_url;
+//			}
+//		}
 		reDocuments.put(word, target_url);
 		return;
 	}
@@ -81,9 +88,9 @@ public class test_Disambiguation {
 			remove_ambiguation(doc,documents,reDocuments);
 		}
 		
-		for(java.util.Map.Entry<String, String> biubiu:reDocuments.entrySet()){
-			System.out.println(biubiu.getKey()+"\t"+biubiu.getValue());
-		}
+//		for(java.util.Map.Entry<String, String> biubiu:reDocuments.entrySet()){
+//			System.out.println(biubiu.getKey()+"\t"+biubiu.getValue());
+//		}
 		
 		long e=System.currentTimeMillis();
 		System.out.println("all time: "+(e-s));

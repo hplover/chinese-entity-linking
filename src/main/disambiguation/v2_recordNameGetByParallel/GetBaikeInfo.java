@@ -1,4 +1,4 @@
-package main.disambiguation.v2;        
+package main.disambiguation.v2_recordNameGetByParallel;        
 
 import java.io   .UnsupportedEncodingException;
 import java.util.Arrays;
