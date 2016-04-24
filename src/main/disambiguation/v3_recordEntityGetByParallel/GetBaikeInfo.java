@@ -79,10 +79,9 @@ public class GetBaikeInfo extends GetBasicInfo{
 			return documents;
 		}
 		ExecutorService executorService=Executors.newCachedThreadPool();
-		String url="",desc="";
+		String url="";
 		for(Entry<String, String> poly:polys.entrySet()){
     		url=poly.getValue();
-    		desc=poly.getKey();
     		executorService.submit(new PolyParallel(url,documents,docs_context));
 		}
 		executorService.shutdown();
@@ -94,7 +93,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		return documents;
 	}
 	
-	public HashSet<Document> writeMongo(){
+	public Set<Document> writeMongo(){
 		if(isSetEntity){
 			return SetEntity;
 		}
@@ -198,6 +197,18 @@ public class GetBaikeInfo extends GetBasicInfo{
 		return SetEntity;
 	}
 	
+	public static List<String> getSynonym(String word) {
+		Document synonym=collection_synonym.find(new Document("word",word)).first();
+		if(!synonym.isEmpty()){
+			List<String> results=new ArrayList<>();
+			FindIterable<Document> re=collection_synonym.find(new Document("entity",synonym.get("entity")));
+			for(Document doc:re){
+				results.add(doc.getString("word"));
+			}
+			return results;
+		}		
+		return null;
+	}
 	
 	public static boolean InMongoDB(String word,Set<Document> entitySet) {
 		boolean re=false;
@@ -219,7 +230,9 @@ public class GetBaikeInfo extends GetBasicInfo{
 			case "synonym":
 				Document re_synonym=collection_synonym.find(new Document("word",word)).first();
 				if(re_synonym!=null&&re_synonym.size()!=0){
-					entitySet.add(collection_entity.find(new Document("title",re_synonym.get("entity"))).first());
+					Document partRe=collection_entity.find(new Document("title",re_synonym.get("entity"))).first();
+					partRe.append("synonym", getSynonym(word));
+					entitySet.add(partRe);
 					return true;
 				}
 				break;
@@ -334,10 +347,6 @@ class PolyParallel implements Runnable {
 			}
 			
 			document.put("url", url);//设置url
-			String default_desc=temp.getDesc();
-			
-			String default_alias=temp.getAlias();
-			
 			double prevalence=new Random().nextDouble()/1.2;//随机产生流行度
 			document.append("prevalence", prevalence);//设置流行度
 			String summary=temp.getSummary();

@@ -5,12 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.print.Doc;
 
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 
 /**
@@ -24,7 +26,7 @@ public class test_Disambiguation {
 	static HashMap<String, String> reDocuments=new HashMap<>();
 	static{
 		try {
-			System.setOut(new PrintStream(new File("F:\\javaout")));
+			System.setOut(new PrintStream(new File("E:\\javaout")));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -32,82 +34,43 @@ public class test_Disambiguation {
 	}
 	
 		
-	//pair-wise??
-	public static void remove_ambiguation(Document doc,Set<Document> documents, HashMap<String, String> reDocuments){
-		String word=doc.getString("word");
-		String default_url=doc.getString("default_url");
-		String default_context=doc.getString("default_context");
-		@SuppressWarnings("unchecked")
-		ArrayList<String> bb=(ArrayList<String>) doc.get("default_label");
-		System.out.println("list:"+bb);
-		int status=doc.getInteger("status");
-		if(status==-1){
-			return ;
-		}
-//		int target=0;
-//		String target_url=default_url;
-//		for(Document adoc:documents){
-//			if(word!=adoc.getString("word")){
-//				target=target+StringUtils.countMatches(default_context,adoc.getString("word"));
-//			}
-//		}
-//		if(status==5){
-//			if(target!=0){
-//				reDocuments.put(word, target_url);
-//				return;
-//			}
-//			return;
-//		}
-		@SuppressWarnings("unchecked")
-		ArrayList<Document> polys=(ArrayList<Document>) doc.get("Polysemant");//convert failed
-		System.out.println(polys);
-		@SuppressWarnings("unchecked")
-		Document infobox=(Document)doc.get("default_infobox");
-		for(Entry<String, Object> jk:infobox.entrySet()){
-			System.out.println(jk.getKey()+"\t"+jk.getValue());
-			@SuppressWarnings("unchecked")
-			ArrayList<String> bb1=(ArrayList<String>) jk.getValue();
-			for(String iii:bb1){
-				System.out.println("contetn:::::"+iii);
+	//简单的看是否包含在网页正文中
+	public static void remove_ambiguation(Entry<String, Set<Document>> doc,HashMap<String, Set<Document>> otherName, HashMap<String, String> reDocuments){
+		String word=doc.getKey();
+		Set<Document> entitySet=doc.getValue();
+		String target_title = "";
+		int target_count=0;
+		for(Document entity:entitySet){
+			String context=entity.getString("context");
+			int tempCount=0;
+			String tempTitle=entity.getString("title");
+			for(Entry<String, Set<Document>> name:otherName.entrySet()){
+				if(!word.equals(name.getKey())){
+					tempCount=tempCount+StringUtils.countMatches(context, name.getKey());
+				}
+			}
+			if(tempCount>=target_count){
+				target_count=tempCount;
+				target_title=tempTitle;
 			}
 		}
-//		System.out.println(infobox);
-//		String poly_context=null;
-//		String poly_url=null;
-//		for(Document poly:polys){
-//			//需要改进的地方：计算实体与实体之间的关系后在决定对应的是哪个实体
-//			poly_context=poly.getString("poly_context");
-//			poly_url=poly.getString("poly_url");
-//			int target_temp=0;
-//			for(Document adoc:documents){
-//				if(word!=adoc.getString("word")){
-//					target_temp=target_temp+StringUtils.countMatches(poly_context,adoc.getString("word"));
-//				}
-//			}
-//			if(target_temp>target){
-//				target=target_temp;
-//				target_url=poly_url;
-//			}
-//		}
-//		reDocuments.put(word, target_url);
-		return;
+		if(!target_title.isEmpty())
+		reDocuments.put(word, target_title);
 	}
 		
 	public static void main(String args[]){
 		long s=System.currentTimeMillis();
-		String text="凤凰";
+		String text="元楼演过的电影";//{电影=电影（世界图书出版公司出版图书）, 元楼=成龙（中国香港演员、导演）}
+		
 		Disambiguation bb=new Disambiguation(text);
-		Set<Document> documents=bb.getEntitiesInfo();
+		HashMap<String, Set<Document>> documents=bb.getEntitiesInfo();
 		System.out.println("=====================");
-		System.out.println("document:"+documents);
-//		System.out.println(HanLP.parseDependency(text));
-		for(Document doc:documents){
+//		System.out.println("document:"+documents);
+		for(Entry<String, Set<Document>> doc:documents.entrySet()){
 			remove_ambiguation(doc,documents,reDocuments);
 		}
 		
-//		for(java.util.Map.Entry<String, String> biubiu:reDocuments.entrySet()){
-//			System.out.println(biubiu.getKey()+"\t"+biubiu.getValue());
-//		}
+		System.out.println(reDocuments);
 		
 		long e=System.currentTimeMillis();
 		System.out.println("all time: "+(e-s));

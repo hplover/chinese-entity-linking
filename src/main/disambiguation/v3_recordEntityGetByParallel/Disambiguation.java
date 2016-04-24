@@ -2,6 +2,7 @@ package main.disambiguation.v3_recordEntityGetByParallel;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,31 +24,15 @@ import tools.javatuples.Tuple;
 
 public class Disambiguation {
 	ExecutorService executorService=Executors.newCachedThreadPool();
-	Set<Document> entitySet=new HashSet<>();
+	HashMap<String,Set<Document>> entitySet=new HashMap<>();
 	HashSet<String> nameMetioned=new HashSet<>();
-//	static MongoCredential credential =null;
-//	static MongoClient mongoClient =null;
-//	static MongoDatabase db =null;
-//	static MongoCollection<Document> collection_entity =null;
-//	static MongoCollection<Document> collection_synonym =null;
-//	static MongoCollection<Document> collection_polysemy =null;
-//	static MongoCollection<Document> collection_index =null;
-//	static{
-//		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
-//		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
-//		db = mongoClient.getDatabase("Plover");
-//		collection_entity = db.getCollection("BaikeEntity");
-//		collection_synonym = db.getCollection("BaikeSynonym");
-//		collection_polysemy = db.getCollection("BaikePolysemy");
-//		collection_index=db.getCollection("entityIndex");
-//	}
 	public Disambiguation(String text) {
 		long f1=System.currentTimeMillis();
 		nameMetioned=(HashSet<String>) wordseg.segWord_Set(text, 3);
 		long f2=System.currentTimeMillis();
 		System.out.println("segment: "+(f2-f1));
 	}
-	public Set<Document> getEntitiesInfo() {
+	public HashMap<String, Set<Document>> getEntitiesInfo() {
 		for(String entity:nameMetioned){
     		executorService.submit(new EntityParallel(entity,entitySet));
 		}
@@ -63,19 +48,24 @@ public class Disambiguation {
 	
 	public static void main(String args[]){
 		long s=System.currentTimeMillis();
-		String text="苹果";
+		String text="国防科大 苹果 四叶草";
 		Disambiguation bb=new Disambiguation(text);
 		System.out.println("entities info is "+bb.getEntitiesInfo());
 		long e=System.currentTimeMillis();
-		System.out.println("all time: "+(e-s));
+
+//		Disambiguation cc=new Disambiguation("四叶草");
+//		System.out.println("entities info is "+cc.getEntitiesInfo());
+//		long j=System.currentTimeMillis();
+		System.out.println("1 time: "+(e-s));
+//		System.out.println("2 time: "+(j-e));
 	}
 }
 class EntityParallel implements Runnable{
 	private String entity="";
-	Set<Document> entities_info=new HashSet<>();
-	public EntityParallel(String entity, Set<Document> entities_info) {
+	HashMap<String, Set<Document>> entities_info=new HashMap<>();
+	public EntityParallel(String entity, HashMap<String, Set<Document>> entitySet) {
 		this.entity=entity;
-		this.entities_info=entities_info;
+		this.entities_info=entitySet;
 	}
 
 	@Override
@@ -89,8 +79,8 @@ class EntityParallel implements Runnable{
 			temp = new GetBaikeInfo(entity,null);
 //			System.out.println(xx);
 			synchronized (entities_info) {
-				HashSet<Document> xx=temp.writeMongo();
-				entities_info.addAll(xx);
+				Set<Document> xx=temp.writeMongo();
+				entities_info.put(entity, xx);
 			}
 //			System.out.println(entities_info);
 		} catch (UnsupportedEncodingException e) {
