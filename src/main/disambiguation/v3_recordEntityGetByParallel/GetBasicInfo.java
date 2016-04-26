@@ -27,9 +27,9 @@ import com.mongodb.client.MongoCollection;
 import net.sf.json.JSONArray;
 import tools.WordSeg.wordseg;
 /**
+ * @since 2016年3月30日
  * @author HuangDC
- * @date 2016年3月30日
- * @description 
+ * @desc 爬取单个实体的信息
  */
 public class GetBasicInfo {
 		private Date date=new Date();
@@ -92,9 +92,9 @@ public class GetBasicInfo {
 	    }
 	    
 	    /**
-	     * 根据输入，爬取百科网页
-	     * @param collection_index 
-	     * @param setEntity 
+	     * 判断输入的input是否存在于数据库中的索引表里，若存在则返回对应的实体，若不存在则爬取网页
+	     * @param collection_index 数据库的索引表
+	     * @param setEntity 存储对应的实体信息
 	     * @param input:可以是输入的关键词，也可以是百科的网址
 	     */
 	    public GetBasicInfo(String input, HashSet<org.bson.Document> setEntity, MongoCollection<org.bson.Document> collection_index) throws UnsupportedEncodingException{
@@ -145,7 +145,7 @@ public class GetBasicInfo {
 						e1.printStackTrace();
 					}
 	    			if(i==3){
-	    				System.out.println("can not connect to "+url);
+	    				System.out.println("failed to connect "+url);
 	    				return null;
 	    			}
 	    		}
@@ -202,7 +202,7 @@ public class GetBasicInfo {
 	    	return "";
 	    }
 	    /**
-	     * 获取异义项信息
+	     * 获取异义项信息，存储的格式为<描述信息,对应的URL>，此处并没有爬取该URL，GeiBaikeInfo.java并行完成此工作
 	     * @return
 	     */
 	    protected LinkedHashMap<String, String> getPoly(){
@@ -274,6 +274,10 @@ public class GetBasicInfo {
 	    	isLabel=true;
 	    	return label;
 	    }
+	    /**
+	     * 获取网页正文
+	     * @return
+	     */
 	    @SuppressWarnings("finally")
 		public String getContext(){
 	    	if(isContext||content==null){
@@ -282,6 +286,7 @@ public class GetBasicInfo {
 			try{
 				Elements bb=content.select("div[class=main-content]");
 				try {
+					//得到正文，然后做预处理（去除标点符号，繁转简体）
 					context=wordseg.trimText(bb.first().text());
 				} catch (Exception e) {
 					System.err.println("class=main-content not found");
@@ -294,12 +299,24 @@ public class GetBasicInfo {
 				return context;
 			}
 	    }
+	    /**
+	     * 获取URL
+	     * @return
+	     */
 	    public String getURL(){
 	    	return url;
 	    }
+	    /**
+	     * 获取当前word的状态（-1为没找到，1为存在异义项，5为唯一实体）
+	     * @return
+	     */
 	    public int getStatus(){
 	    	return status;
 	    }
+	    /**
+	     * 获取实体的infobox信息，返回的类型为Document
+	     * @return
+	     */
 		public org.bson.Document getInforBox() {
 			if(isInfoBox||content==null){
 				return infobox;

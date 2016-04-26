@@ -1,37 +1,47 @@
 package main.disambiguation.v3_recordEntityGetByParallel;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-
 import tools.WordSeg.wordseg;
-import tools.javatuples.Tuple;
 
 public class Disambiguation {
+	//存储结果的数据结构
+	private static HashMap<String, String> reDocuments=new HashMap<>();
+	
+	//线程池相关
 	ExecutorService executorService=Executors.newCachedThreadPool();
+	
+	//存储句子中所有实体的信息
 	HashMap<String,Set<Document>> entitySet=new HashMap<>();
+	
+	//存储识别到的句子中的命名实体
 	HashSet<String> nameMetioned=new HashSet<>();
+	
+	/**
+	 * 获得命名实体
+	 * @param text
+	 */
 	public Disambiguation(String text) {
 		long f1=System.currentTimeMillis();
 		nameMetioned=(HashSet<String>) wordseg.segWord_Set(text, 3);
 		long f2=System.currentTimeMillis();
 		System.out.println("segment: "+(f2-f1));
 	}
+	
+	/**
+	 * 并行获得命名实体的信息
+	 * @return
+	 */
 	public HashMap<String, Set<Document>> getEntitiesInfo() {
 		for(String entity:nameMetioned){
     		executorService.submit(new EntityParallel(entity,entitySet));
@@ -44,20 +54,57 @@ public class Disambiguation {
         }
 		return entitySet;
 	}
-		
 	
+	/**
+	 * 消歧：简单看待消歧实体是否包含句子中其他命名实体
+	 * @param doc
+	 * @param otherName
+	 * @param reDocuments
+	 */
+	public static void remove_ambiguation(Entry<String, Set<Document>> doc,HashMap<String, Set<Document>> otherName, HashMap<String, String> reDocuments){
+		String word=doc.getKey();
+		Set<Document> entitySet=doc.getValue();
+		String target_title = "";
+		int target_count=0;
+		for(Document entity:entitySet){
+			String context=entity.getString("context");
+			int tempCount=0;
+			String tempTitle=entity.getString("title");
+			for(Entry<String, Set<Document>> name:otherName.entrySet()){
+				if(!word.equals(name.getKey())){
+					tempCount=tempCount+StringUtils.countMatches(context, name.getKey());
+				}
+			}
+			if(tempCount>target_count){
+				target_count=tempCount;
+				target_title=tempTitle;
+			}
+		}
+		if(!target_title.isEmpty())
+		reDocuments.put(word, target_title);
+	}
+	
+	/**
+	 * 获取消歧结果
+	 * @return
+	 */
+	public HashMap<String, String> getResult(){
+		getEntitiesInfo();
+		for(Entry<String, Set<Document>> doc:entitySet.entrySet()){
+			remove_ambiguation(doc,entitySet,reDocuments);
+		}
+		System.out.println(reDocuments);
+		return reDocuments;
+	}
+	
+	//调用实例
 	public static void main(String args[]){
 		long s=System.currentTimeMillis();
-		String text="国防科大 苹果 四叶草";
+		String text="苹果CEO是谁？";
 		Disambiguation bb=new Disambiguation(text);
-		System.out.println("entities info is "+bb.getEntitiesInfo());
+		bb.getResult();
 		long e=System.currentTimeMillis();
-
-//		Disambiguation cc=new Disambiguation("四叶草");
-//		System.out.println("entities info is "+cc.getEntitiesInfo());
-//		long j=System.currentTimeMillis();
-		System.out.println("1 time: "+(e-s));
-//		System.out.println("2 time: "+(j-e));
+		System.out.println("all time: "+(e-s));
 	}
 }
 class EntityParallel implements Runnable{
@@ -77,12 +124,10 @@ class EntityParallel implements Runnable{
 		GetBaikeInfo temp;
 		try {
 			temp = new GetBaikeInfo(entity,null);
-//			System.out.println(xx);
 			synchronized (entities_info) {
 				Set<Document> xx=temp.writeMongo();
 				entities_info.put(entity, xx);
 			}
-//			System.out.println(entities_info);
 		} catch (UnsupportedEncodingException e) {
 			System.out.printf("failed to get %s info\n",entity);
 		}

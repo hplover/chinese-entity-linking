@@ -3,7 +3,6 @@ package main.disambiguation.v3_recordEntityGetByParallel;
 import java.io   .UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,14 +12,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.bson.Document;
-
+import org.javatuples.Triplet;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
@@ -28,23 +24,26 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-import net.sf.json.JSONArray;
 import tools.WordSeg.wordseg;
-import tools.javatuples.Triplet;
 /**
- * 这个类用来构建实体表，同义词表，异义词表；以及返回某个实体的全部信息
+ * @since 2016年4月14日
  * @author HuangDC
+ * @desc 并行爬取多义词信息，整合后计算tfidf值，然后把爬取和计算的信息写入数据库；更新数据库中的实体表、同义词表、多义词表、索引表
  */
 public class GetBaikeInfo extends GetBasicInfo{
-    Set<Document> documents=new HashSet<>();
+    Set<Document> documents=new HashSet<>();//存储多义词信息
+    
+    //计算tfidf需要的数据结构，存储每个word对应的实体的网页正文中的名词的tfidf值
     HashMap<String, HashMap<String, Triplet<Integer, Double, Double>>> docs_context=new HashMap<>();
     
-    private double feature_words_ratio=0.5;
-    HashSet<Document> SetEntity=null;
-    HashMap<String, Set<String>> feature_words=new HashMap<>();
-	private boolean isSetEntity;
+    HashSet<Document> SetEntity=null;//存储word对应的每个实体的信息
+    HashMap<String, Set<String>> feature_words=new HashMap<>();//每个实体对应的特征值（网页正文中名词的tfidf值）
+    private double feature_words_ratio=1;//获取百分之一百的网页名词
+	private boolean isSetEntity;//判断SetEntity是否有内容
 	
-	static int mode=3;
+	static int mode=3;//设置分词模式，3位CRF分词
+	
+	//以下static为数据库连接信息
 	static MongoCredential credential =null;
 	static MongoClient mongoClient =null;
 	static MongoDatabase db =null;
@@ -54,7 +53,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 	static MongoCollection<Document> collection_index =null;
 	static{
 		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
-		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	//3006设置为Mongodb端口号
+		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	
 		db = mongoClient.getDatabase("Plover");
 		collection_entity = db.getCollection("BaikeEntity");
 		collection_synonym = db.getCollection("BaikeSynonym");
@@ -62,7 +61,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		collection_index=db.getCollection("entityIndex");
 	}
 	
-	
+	//判断输入的词是否存在在数据库中，若存在则把实体信息存在SetEntity中，若不存在则爬取百科
 	public GetBaikeInfo(String word,HashSet<Document> temp) throws UnsupportedEncodingException{
 		super(word,temp=new HashSet<>(),collection_index);
 		SetEntity=temp;
@@ -73,8 +72,10 @@ public class GetBaikeInfo extends GetBasicInfo{
 			docs_context.put(super.getURL(), wordseg.segWord_TF(super.getContext(), mode));
 		}
 	}
+	
+	//并行爬取多义词信息，并把爬取的信息存到documents中
 	private Set<Document> getPolysemantParallel() throws UnsupportedEncodingException{
-		LinkedHashMap<String, String> polys=super.getPoly();
+		LinkedHashMap<String, String> polys=super.getPoly();//获取多义词的url
 		if(polys.isEmpty()){
 			return documents;
 		}
@@ -93,6 +94,8 @@ public class GetBaikeInfo extends GetBasicInfo{
 		return documents;
 	}
 	
+	
+	//整合多个多义词信息并存入数据库
 	public Set<Document> writeMongo(){
 		if(isSetEntity){
 			return SetEntity;
@@ -105,14 +108,14 @@ public class GetBaikeInfo extends GetBasicInfo{
 		if(status==-1){
 			return SetEntity;
 		}
-		
+		//根据输入的word的信息更新索引表、同义词表、多义词表
 		if(!word.equals(title)||!word.equals(title.toUpperCase())){
 			if(status==1){
 				collection_index.insertOne(new Document("word",word).append("type", "polysemy"));
 				collection_index.insertOne(new Document("word",title).append("type", "entity"));
-				collection_polysemy.insertOne(new Document("word",word).append("entity", title));//写入多义词表
+				collection_polysemy.insertOne(new Document("word",word).append("entity", title));
 				if(!title.endsWith("）")){
-					collection_synonym.insertOne(new Document("word",word).append("entity", title));//写入同义词表
+					collection_synonym.insertOne(new Document("word",word).append("entity", title));
 				}
 			}
 			else if(status==5){
@@ -124,50 +127,53 @@ public class GetBaikeInfo extends GetBasicInfo{
 		else{
 			collection_index.insertOne(new Document("word",word).append("type", "entity"));
 		}
-		Document entitydoc=new Document();
+		
+		//以下操作为更新实体表：
+		
+		Document entitydoc=new Document();//构建实体表中的每条记录
 		
 		entitydoc.put("Date", date);
-		if(!title.isEmpty()){//设置title
+		if(!title.isEmpty()){
 			entitydoc.put("title", title);
 		}
 
 		String url=super.getURL();
-		if(!url.isEmpty()){//设置url
+		if(!url.isEmpty()){
 			entitydoc.put("url", url);
 		}
 
 		double prevalence=0.9/1.1;
-		entitydoc.append("prevalence", prevalence);//设置流行度
+		entitydoc.append("prevalence", prevalence);
 		String summary=super.getSummary();
-		if(!summary.isEmpty()){//设置summary
+		if(!summary.isEmpty()){
 			entitydoc.put("summary", summary);
 		}
 		ArrayList<String> label=super.getLabel();
-		if(!label.isEmpty()){//设置label
+		if(!label.isEmpty()){
 			entitydoc.put("label", label);
 		}
 		List<String> keywords=super.getKeyWords();
-		if(!keywords.isEmpty()){//设置keywords
+		if(!keywords.isEmpty()){
 			entitydoc.put("keywords", keywords);
 		}
 		Document infobox=super.getInforBox();
-		if(!infobox.isEmpty()){//设置infobox
+		if(!infobox.isEmpty()){
 			entitydoc.put("infobox", infobox);
 		}
 		String context=super.getContext();
-		if(!context.isEmpty()){//设置context
+		if(!context.isEmpty()){
 			entitydoc.put("context", context);
 		}
 		Set<Document> Polysemant;
 		try {
-			Polysemant = getPolysemantParallel();
+			Polysemant = getPolysemantParallel();//并行爬取多义词信息，并存入documents
 			try {
-				getTFIDF();
+				getTFIDF();//计算TFIDF值
 				Set<String> feature=feature_words.get(url);
 				if(!feature.isEmpty())
 				entitydoc.put("feature", feature_words.get(url));
 				try {
-					collection_entity.insertOne(entitydoc);//写入默认的实体
+					collection_entity.insertOne(entitydoc);//写实体表
 					SetEntity.add(entitydoc);
 				} catch (Exception e) {
 					System.err.println("write to mongodb failed");
@@ -179,9 +185,9 @@ public class GetBaikeInfo extends GetBasicInfo{
 						title=doc.getString("title");
 						doc.append("feature", feature_words.get(polyurl));
 						try {
-							collection_index.insertOne(new Document("word",title).append("type", "entity"));//写入索引表
-							collection_entity.insertOne(doc);//写入实体表
-							collection_polysemy.insertOne(new Document("word",word).append("entity", title));//写入多义词表
+							collection_index.insertOne(new Document("word",title).append("type", "entity"));//更新索引表
+							collection_entity.insertOne(doc);
+							collection_polysemy.insertOne(new Document("word",word).append("entity", title));//更新多义词表
 							SetEntity.add(doc);
 						} catch (Exception e) {
 							System.err.println("write to mongodb failed");
@@ -197,6 +203,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		return SetEntity;
 	}
 	
+	//查看某个词的多义词
 	public static List<String> getSynonym(String word) {
 		Document synonym=collection_synonym.find(new Document("word",word)).first();
 		if(!synonym.isEmpty()){
@@ -210,6 +217,7 @@ public class GetBaikeInfo extends GetBasicInfo{
 		return null;
 	}
 	
+	//判断输入的word是否存在于数据库中，若返回true，并同时更新entitySet，该集合存了word对应的所有实体的信息（包含对应的同义词）
 	public static boolean InMongoDB(String word,Set<Document> entitySet) {
 		boolean re=false;
 		if(entitySet==null||collection_index==null){
@@ -252,20 +260,8 @@ public class GetBaikeInfo extends GetBasicInfo{
 		return re;
 	}
 	
-//	static <K,V extends Comparable<? super V>>
-//	SortedSet<Map.Entry<K,V>> entriesSortedByValues(Map<K,V> map) {
-//	    SortedSet<Map.Entry<K,V>> sortedEntries = new TreeSet<Map.Entry<K,V>>(
-//	        new Comparator<Map.Entry<K,V>>() {
-//	            @Override public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
-//	                int res = e2.getValue().compareTo(e1.getValue());
-//	                return res != 0 ? res : 1;
-//	            }
-//	        }
-//	    );
-//	    sortedEntries.addAll(map.entrySet());
-//	    return sortedEntries;
-//	}
 	
+	//计算TFIDF
 	public String getTFIDF() {
 		for(Entry<String, HashMap<String, Triplet<Integer, Double, Double>>> doc:docs_context.entrySet()){
 			String url=doc.getKey();
@@ -277,7 +273,6 @@ public class GetBaikeInfo extends GetBasicInfo{
 				Double tfidf=term_data.getValue1()*(1+Math.log(wordseg.alldocterms/wordseg.allterms.get(word)));
 				word_tfidf.put(word, tfidf);
 			}
-//			SortedSet<Entry<String, Double>> result=entriesSortedByValues(word_tfidf);
 			
 			Set<String> temp=new HashSet<>();
 			int i=0;
@@ -297,13 +292,18 @@ public class GetBaikeInfo extends GetBasicInfo{
 	
 	public static void main(String args[]) throws Exception{
     	long start=System.currentTimeMillis();
-		GetBaikeInfo extract=new GetBaikeInfo("国防科大",null);
+		GetBaikeInfo extract=new GetBaikeInfo("四叶草",null);
 		System.out.println(extract.writeMongo());
     	long pp=System.currentTimeMillis();
     	System.out.println("all:"+(pp-start));
 	}
 }
 
+
+
+/**
+ * 爬取每个多义词实体的信息并写入数据库
+ */
 class PolyParallel implements Runnable {
 	private String url;
 	private String desc;
@@ -334,7 +334,6 @@ class PolyParallel implements Runnable {
 			GetBasicInfo temp=new GetBasicInfo(url,null,null);
 
 			int status=temp.getStatus();
-//			System.out.println(url+"\t"+status);
 			if(status==-1){
 				return;
 			}
@@ -342,31 +341,31 @@ class PolyParallel implements Runnable {
 			Date date=temp.getDate();
 			document.put("Date", date);
 			String title=temp.getTitle();
-			if(!title.isEmpty()){//设置title
+			if(!title.isEmpty()){
 				document.put("title", title);
 			}
 			
-			document.put("url", url);//设置url
-			double prevalence=new Random().nextDouble()/1.2;//随机产生流行度
-			document.append("prevalence", prevalence);//设置流行度
+			document.put("url", url);
+			double prevalence=new Random().nextDouble()/1.2;
+			document.append("prevalence", prevalence);
 			String summary=temp.getSummary();
-			if(!summary.isEmpty()){//设置summary
+			if(!summary.isEmpty()){
 				document.put("summary", summary);
 			}
 			ArrayList<String> label=temp.getLabel();
-			if(!label.isEmpty()){//设置label
+			if(!label.isEmpty()){
 				document.put("label", label);
 			}
 			List<String> keywords=temp.getKeyWords();
-			if(!keywords.isEmpty()){//设置keywords
+			if(!keywords.isEmpty()){
 				document.put("keywords", keywords);
 			}
 			Document default_infobox=temp.getInforBox();
-			if(!default_infobox.isEmpty()){//设置infobox
+			if(!default_infobox.isEmpty()){
 				document.put("infobox", default_infobox);
 			}
 			String context=temp.getContext();
-			if(!context.isEmpty()){//设置context
+			if(!context.isEmpty()){
 				document.put("context", context);
 			}
 			if(!temp.getContext().isEmpty()){

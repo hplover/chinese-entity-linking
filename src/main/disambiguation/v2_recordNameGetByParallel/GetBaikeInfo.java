@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
+import org.javatuples.Triplet;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
@@ -26,7 +27,6 @@ import com.mongodb.client.MongoDatabase;
 
 import net.sf.json.JSONArray;
 import tools.WordSeg.wordseg;
-import tools.javatuples.Triplet;
 
 public class GetBaikeInfo extends GetBasicInfo{
     Set<Document> documents=new HashSet<>();
