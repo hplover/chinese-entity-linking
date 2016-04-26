@@ -24,13 +24,13 @@ public class wordseg {
 	public static HashMap<String, Long> allterms=new HashMap<>();
 	public static long alldocterms=0;
 	static PrintStream original=System.out;
-//	static String[] getProperty={"nt","nz","nt","nr","nf","ns","n"};
-//	static String[] nounWord={"n","nt","nz","nr","nf","nf"};
-//	static Set<String> getN;
-//	public static Set<String> getP;
+
+
+
+
 	static{
-//		getP=new HashSet<>(Arrays.asList(getProperty));
-//		getN=new HashSet<>(Arrays.asList(nounWord));
+
+
 		long a=System.currentTimeMillis();
 		sgmt = new BigSegment(path);
 		long b=System.currentTimeMillis();
@@ -56,7 +56,7 @@ public class wordseg {
 				id++;
 			}
 		}
-		text = LangUtils.T2S(new String(chs).trim());//鍚﹀垯鍚庨潰浼氭湁绌烘牸
+		text = LangUtils.T2S(new String(chs).trim());
 		return LangUtils.replaceAnsiMarkWithSpace(text);
 	}
 	
@@ -66,14 +66,14 @@ public class wordseg {
 		text_single=trimText(text_single);
 		System.out.println("Trim:"+text_single);
 		List<Result> ReList = new ArrayList<>();
-		HashSet<String> hSet=new HashSet<>();//avoid replication
+		HashSet<String> hSet=new HashSet<>();
 		String[] textarray=text_single.split(",");
 		System.out.print("Segment:");
 		for(String text:textarray){
 			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
 			for(Term result:termReList){
 				String ttype=result.nature.name();
-//				System.out.println(result.word+" "+ttype);
+
 				if(hSet.contains(result.word))
 					continue;
 				else {
@@ -92,17 +92,17 @@ public class wordseg {
 	}
 	
 	public static Set<String> segWord_Set(String text_single,int mode) {
-//		System.out.println("Src:"+text_single);
-//		text_single=trimText(text_single);
-//		System.out.println("Trim:"+text_single);
-		HashSet<String> hSet=new HashSet<>();//avoid replication
+
+
+
+		HashSet<String> hSet=new HashSet<>();
 		String[] textarray=text_single.split(",");
-//		System.out.print("Segment:");
+
 		for(String text:textarray){
 			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
 			for(Term result:termReList){
 				String ttype=result.nature.name();
-//				System.out.print(result.word+" ");
+
 				if(hSet.contains(result.word))
 					continue;
 				else {
@@ -115,8 +115,8 @@ public class wordseg {
 		return hSet;
 	}
 	
-	public static HashMap<String, Triplet<Integer, Double, Double>> segWord_TF(String text_single,int mode) {//Integer means term count,the first Double means term frequence,the second Double means idf
-//		text_single=trimText(text_single);
+	public static HashMap<String, Triplet<Integer, Double, Double>> segWord_TF(String text_single,int mode) {
+
 		String[] textarray=text_single.split(",");
 		HashMap<String, Triplet<Integer, Double, Double>> tf=new HashMap<>();
 		String ttype=null;
@@ -160,18 +160,18 @@ public class wordseg {
 
 	public static void main(String[] args) throws FileNotFoundException{
 		wordseg xx=new wordseg();
-		String text = "鍦ㄤ粖骞村瀛ｇ殑鍐涙柟灏嗛璋冩暣涓紝鍙堟湁澶氫綅骞磋交灏嗛琚噸鐢細鎴愰兘鍐涘尯鏀挎不閮ㄤ富浠诲惔鏄屽痉涓皢锛屽崌浠绘�绘斂娌婚儴鍓富浠伙紱鏇炬槸鈥滄渶骞磋交涓皢鈥濈殑鍥介槻绉戞妧澶у鏍￠暱寮犺偛鏋楋紝璋冧换鎬昏澶囬儴鍓儴闀匡紱涓浗浜烘皯瑙ｆ斁鍐涘浗闃茬瀛︽妧鏈ぇ瀛﹀壇鏍￠暱鏉ㄥ鍐涘崌浠昏鏍℃牎闀匡紝鎴愪负鍓ぇ鍐涘尯绾у皢棰嗕腑涓烘暟涓嶅鐨勨��60鍚庘��,榛勪笢宸濇槸SB鍝堝搱鍝堟渤鍗楃渷鍖栧鐢熺墿涓庢湁鏈哄寲瀛﹂噸鐐瑰疄楠屽";
-//		String text="鏂版椂鏈熺敓鐞嗙敓鎬佸鐨勫彂灞曪紝闈复鍒嗗瓙鐢熺墿瀛﹀拰缁勫锛�-omics锛夌瓑瀛︾鍜屾妧鏈墜娈电殑鎸戞垬锛屽悓鏃舵柊瀛︾鍜屾柊鎶�鏈彂灞曚篃涓虹敓鐞嗙敓鎬佸鐨勫彂灞曟彁渚涗簡鏂扮殑鏈洪亣銆備笉鍚屽姩鐗╃被缇ら�傚簲鍚勭涓嶅悓鐜锛堝挨鍏舵槸鏋佺鐜锛夌殑鏈虹悊锛岄渶瑕佷粠鍚勪釜缁勭粐灞傛涓娿�佸悇瀛︾浜ゅ弶杩涜鏁村悎鐮旂┒銆傚姩鐗╁涓嶆柇鍙樺寲鐫�鐨勭幆澧冪殑鐢熺悊鍔熻兘鐨勮皟鑺傚拰鏀瑰彉鍙婂叾閫傚簲鍜岃繘鍖栨満鐞嗭紝灏嗘槸鐢熺悊鐢熸�佸鏈潵鐨勯噸瑕佺爺绌朵富棰樸�傛垜浠篃鐪嬪埌锛岀敓鐞嗙敓鎬佸鍦ㄥ姩鐗╄涓哄銆佷繚鎶ょ敓鐗╁銆佺缇ょ敓鎬佸鍜岀兢钀界敓鎬佸涓湴浣嶅拰浣滅敤锛屾樉寰楁棩瓒嬮噸瑕併�備繚鎶ょ敓鐞嗗锛坈onservation physiology锛夈�佷唬璋㈢敓鎬佸锛坢etabolicecology锛夊拰瀹忕敓鐞嗗锛坢acrophysiology锛夌瓑鏂伴鍩熺殑鍏磋捣锛屼篃杩涗竴姝ュ厖瀹炲拰鎷撳睍浜嗙敓鐞嗙敓鎬佸鐨勫唴娑点��";
-//		String text="澶氳仛閰堕摼寮忓弽搴旓紙PCR锛夋槸涓�椤圭敤浜庝綋澶栧鍒禗NA鐨勬瀬涓洪�氱敤鐨勬妧鏈�傜畝鑰岃█涔嬶紝PCR鎶�鏈彲浠ヤ娇鍗曢摼DNA琚鍒舵暟鐧句竾娆★紝涔熷厑璁哥敤浜嬪厛纭畾濂界殑鏂瑰紡瀵硅澶嶅埗鐨凞NA搴忓垪杩涜鏀瑰姩銆備緥濡傦紝PCR鎶�鏈彲浠ョ敤浜庡紩鍏ラ檺鍒舵�ч叾鍒囦綅鐐癸紝鎴栬�呭鐗瑰畾鐨凞NA纰卞熀杩涜绐佸彉锛堟敼鍙橈級銆侾CR鎶�鏈繕鍙互鐢ㄤ簬浠巆DNA鏂囧簱鑾峰緱鐗瑰畾鐨凞NA鐗囨锛屾垨鑰呬粠鍙︿竴涓搴︼紝鐢ㄤ簬鍒ゆ柇涓�涓猚DNA鏂囧簱涓槸鍚﹀惈鏈夌壒瀹氱殑DNA鐗囨銆�";
+		String text = "在今年夏季的军方将领调整中，又有多位年轻将领被重用：成都军区政治部主任吴昌德中将，升任总政治部副主任；曾是“最年轻中将”的国防科技大学校长张育林，调任总装备部副部长；国防科技大学副校长杨学军升任该校校长，成为副大军区级将领中为数不多的“60后”。";
+
+
 		System.out.println(text);
 		List<Result> result=xx.segWord_Result(text,3);
 		for(Result tt:result){
 			System.out.println(tt.keyword+"\t"+tt.type);
 		}
-//		List<Result> result1=xx.segWord_Result(text,3);
-//		for(Entry<String, Triplet<Integer, Double, Double>> tt:result1.entrySet()){
-//			tt.getValue().add(tuple)
-//			System.out.println(tt.getKey()+"\t"+tt.getValue());
-//		}
+
+
+
+
+
 	}
 }
