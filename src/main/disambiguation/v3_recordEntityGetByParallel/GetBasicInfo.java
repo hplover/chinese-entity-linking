@@ -24,6 +24,8 @@ import org.jsoup.select.Elements;
 
 import com.mongodb.client.MongoCollection;
 
+import main.disambiguation.v3_recordEntityGetByParallel.proxy.GetProxy;
+import main.disambiguation.v3_recordEntityGetByParallel.proxy.IPPort;
 import net.sf.json.JSONArray;
 import tools.WordSeg.wordseg;
 /**
@@ -52,6 +54,9 @@ public class GetBasicInfo {
 	    static List<String> user_agents=new ArrayList<>(); 
 	    static int useragent_len=0;
 	    static String baikePrefix="http://baike.baidu.com";
+	    static List<IPPort> ipPorts=new ArrayList<>();
+	    static int ipports_len=0;
+	    static IPPort ipPort;
 	    
 	    /**
 	     * 是否已经获得各个部分的信息的标识
@@ -63,24 +68,12 @@ public class GetBasicInfo {
 	   	 * 读取爬取数据时需要用来伪装的客户端
 	   	 */
 	    static{
-	    	boolean flag=true;
-	    	int i=0;
-	    	while(flag){
-	    		try {
-	    			flag=false;
-	    		} catch (Exception e) {
-	    			i++;
-	    			if(i==3){
-	    				System.err.println("can not access internet.");
-	    				System.exit(-1);
-	    			}
-	    		}
-	    	}
 	    	try (
 	    		    InputStream fis = new FileInputStream("resources/user_agents");
 	    		    InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
 	    		    BufferedReader br = new BufferedReader(isr);
 	    		) {
+	    			ipPorts=new GetProxy().GetAllProxy(1000);
 	    			String line="";
 	    		    while ((line = br.readLine()) != null) {
 	    		        user_agents.add(line);
@@ -89,6 +82,7 @@ public class GetBasicInfo {
 					e.printStackTrace();
 				}
 	    	useragent_len=user_agents.size();
+	    	ipports_len=ipPorts.size();
 	    }
 	    
 	    /**
@@ -102,6 +96,7 @@ public class GetBasicInfo {
 	    	else{
 	    		index=new Random().nextInt(useragent_len)%(useragent_len+1);
 		    	user_agent=user_agents.get(index);
+		    	ipPort=ipPorts.get(new Random().nextInt(ipports_len)%(ipports_len+1));
 		    	if(isURL(input)){
 		    		url=input;
 		    	}
@@ -135,6 +130,9 @@ public class GetBasicInfo {
 	    	Document content = null;
 	    	while(flag){
 	    		try {
+	    			System.getProperties().setProperty("proxySet", "true");
+    		        System.getProperties().setProperty("http.proxyHost", ipPort.getIp());
+    		        System.getProperties().setProperty("http.proxyPort", ipPort.getPort());
 	    			content=Jsoup.connect(url).userAgent(user_agent).get();
 	    			flag=false;
 	    		} catch (Exception e) {
@@ -379,9 +377,9 @@ public class GetBasicInfo {
 	    
 	    public static void main(String args[]) throws Exception{
 	    	long start=System.currentTimeMillis();
-	    	String[] bb={"123","sdf","jaksdf"};
-	    	System.out.println(Arrays.asList(bb));
-	    	GetBasicInfo extract=new GetBasicInfo("TFBOYS",null,null);
+//	    	String[] bb={"123","sdf","jaksdf"};
+//	    	System.out.println(Arrays.asList(bb));
+	    	GetBasicInfo extract=new GetBasicInfo("世纪广场",null,null);
 	    	System.out.println("keywors:"+extract.getKeyWords());
 	    	System.out.println("time:"+extract.getDate());
 	    	System.out.println("title:"+extract.getTitle());

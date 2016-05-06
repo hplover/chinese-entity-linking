@@ -25,12 +25,7 @@ public class wordseg {
 	public static long alldocterms=0;
 	static PrintStream original=System.out;
 
-
-
-
 	static{
-
-
 		long a=System.currentTimeMillis();
 		sgmt = new BigSegment(path);
 		long b=System.currentTimeMillis();

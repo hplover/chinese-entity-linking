@@ -84,12 +84,12 @@ public class MongoDB {
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
     		while ((line = br.readLine()) != null) {
     			i++;
-    	    	if(line.equals("王宁")){
+    	    	if(i==505244){
     	    		break;
     	    	}
     	    }
     	    while ((line = br.readLine()) != null) {
-//    	    	System.out.println(line);
+    	    	System.out.println(line);
     	    	new GetBaikeInfo(line,null).writeMongo();
     	    	System.out.println(new Date()+"\tinsert\t" + line+"\t"+(i++));
 //    	    	Thread.sleep(1000);
