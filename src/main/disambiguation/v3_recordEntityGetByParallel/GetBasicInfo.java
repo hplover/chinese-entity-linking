@@ -11,22 +11,16 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import com.mongodb.client.MongoCollection;
 
-import main.disambiguation.v3_recordEntityGetByParallel.proxy.GetProxy;
-import main.disambiguation.v3_recordEntityGetByParallel.proxy.IPPort;
-import net.sf.json.JSONArray;
 import tools.WordSeg.wordseg;
 /**
  * @since 2016年3月30日
@@ -54,9 +48,7 @@ public class GetBasicInfo {
 	    static List<String> user_agents=new ArrayList<>(); 
 	    static int useragent_len=0;
 	    static String baikePrefix="http://baike.baidu.com";
-	    static List<IPPort> ipPorts=new ArrayList<>();
 	    static int ipports_len=0;
-	    static IPPort ipPort;
 	    
 	    /**
 	     * 是否已经获得各个部分的信息的标识
@@ -73,16 +65,16 @@ public class GetBasicInfo {
 	    		    InputStreamReader isr = new InputStreamReader(fis, Charset.forName("UTF-8"));
 	    		    BufferedReader br = new BufferedReader(isr);
 	    		) {
-	    			ipPorts=new GetProxy().GetAllProxy(1000);
+//	    			ipPorts=new GetProxy().GetAllProxy(1000);
 	    			String line="";
 	    		    while ((line = br.readLine()) != null) {
 	    		        user_agents.add(line);
 	    		    }
+	    		    System.out.println("success load user_agents");
 	    		} catch (IOException e) {
 					e.printStackTrace();
 				}
 	    	useragent_len=user_agents.size();
-	    	ipports_len=ipPorts.size();
 	    }
 	    
 	    /**
@@ -96,7 +88,7 @@ public class GetBasicInfo {
 	    	else{
 	    		index=new Random().nextInt(useragent_len)%(useragent_len+1);
 		    	user_agent=user_agents.get(index);
-		    	ipPort=ipPorts.get(new Random().nextInt(ipports_len)%(ipports_len+1));
+//		    	ipPort=ipPorts.get(new Random().nextInt(ipports_len)%(ipports_len+1));
 		    	if(isURL(input)){
 		    		url=input;
 		    	}
@@ -130,9 +122,9 @@ public class GetBasicInfo {
 	    	Document content = null;
 	    	while(flag){
 	    		try {
-	    			System.getProperties().setProperty("proxySet", "true");
-    		        System.getProperties().setProperty("http.proxyHost", ipPort.getIp());
-    		        System.getProperties().setProperty("http.proxyPort", ipPort.getPort());
+//	    			System.getProperties().setProperty("proxySet", "true");
+//    		        System.getProperties().setProperty("http.proxyHost", "45.32.27.19");
+//    		        System.getProperties().setProperty("http.proxyPort", "23333");
 	    			content=Jsoup.connect(url).userAgent(user_agent).get();
 	    			flag=false;
 	    		} catch (Exception e) {

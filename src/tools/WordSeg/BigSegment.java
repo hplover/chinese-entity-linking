@@ -23,7 +23,7 @@ public class BigSegment {
 		HanLP.Config.ShowTermNature = true;
 		nShortSegment.enableCustomDictionary(true).enablePlaceRecognize(true)
 				.enableOrganizationRecognize(true);
-		/*
+		
 		synchronized (isInited) {
 			if (!isInited) {
 				isInited = true;
@@ -85,7 +85,7 @@ public class BigSegment {
 						+ HanLP.Config.WordNatureModelPath;
 			}
 		}
-		*/
+		
 	}
 
 	/**

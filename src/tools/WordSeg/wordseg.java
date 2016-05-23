@@ -36,22 +36,22 @@ public class wordseg {
 		if(text.length() > 6003){
 			text = text.substring(0, 6001);
 		}
-		char[] chs = new char[text.length()];
 		text = LangUtils.mapFullWidthLetterToHalfWidth(text);
 		text = LangUtils.mapChineseMarksToAnsi(text);
 		text = LangUtils.mapFullWidthNumberToHalfWidth(text);
 		text = LangUtils.removeEmptyLines(text);
 		text = LangUtils.removeExtraSpaces(text);
 		text = LangUtils.removeLineEnds(text);
-		int id = 0;
-		for(int i=0;i<text.length();i++){
-			char c = text.charAt(i);
-			if(LangUtils.isChinese(c)|| ((int)c >31&& (int)c<128)){
-				chs[id]=c;
-				id++;
-			}
-		}
-		text = LangUtils.T2S(new String(chs).trim());
+//		char[] chs = new char[text.length()];
+//		int id = 0;
+//		for(int i=0;i<text.length();i++){
+//			char c = text.charAt(i);
+//			if(LangUtils.isChinese(c)|| ((int)c >31&& (int)c<128)){
+//				chs[id]=c;
+//				id++;
+//			}
+//		}
+//		text = LangUtils.T2S(new String(chs).trim());
 		return LangUtils.replaceAnsiMarkWithSpace(text);
 	}
 	
@@ -68,7 +68,6 @@ public class wordseg {
 			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
 			for(Term result:termReList){
 				String ttype=result.nature.name();
-
 				if(hSet.contains(result.word))
 					continue;
 				else {
@@ -97,7 +96,6 @@ public class wordseg {
 			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
 			for(Term result:termReList){
 				String ttype=result.nature.name();
-
 				if(hSet.contains(result.word))
 					continue;
 				else {
@@ -155,10 +153,11 @@ public class wordseg {
 
 	public static void main(String[] args) throws FileNotFoundException{
 		wordseg xx=new wordseg();
-		String text = "在今年夏季的军方将领调整中，又有多位年轻将领被重用：成都军区政治部主任吴昌德中将，升任总政治部副主任；曾是“最年轻中将”的国防科技大学校长张育林，调任总装备部副部长；国防科技大学副校长杨学军升任该校校长，成为副大军区级将领中为数不多的“60后”。";
+		//String text = "在今年夏季的军方将领调整中，又有多位年轻将领被重用：成都军区政治部主任吴昌德中将，升任总政治部副主任；曾是“最年轻中将”的国防科技大学校长张育林，调任总装备部副部长；国防科技大学副校长杨学军升任该校校长，成为副大军区级将领中为数不多的“60后”。";
+		//String text = "朱主爱的粉丝是不是四叶草，四叶草其实是TFBoys的粉丝啦，不是朱主爱的粉丝。不过朱主爱的艺名叫倒四叶草没错。";
+//		String text="LINKIN PARK歌曲的演唱者麦克·信田";
+		String text="Barack Obama was born in Hawaii, he was elected in 2008. Will Donald Trump destroy New York City";
 
-
-		System.out.println(text);
 		List<Result> result=xx.segWord_Result(text,3);
 		for(Result tt:result){
 			System.out.println(tt.keyword+"\t"+tt.type);

@@ -11,10 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
+import org.javatuples.Tuple;
 
 import tools.WordSeg.wordseg;
 
-public class Disambiguation {
+public class Disambiguation_PrevalenceLesk {
 	//存储结果的数据结构
 	private static HashMap<String, String> reDocuments=new HashMap<>();
 	
@@ -27,11 +28,14 @@ public class Disambiguation {
 	//存储识别到的句子中的命名实体
 	HashSet<String> nameMetioned=new HashSet<>();
 	
+	//存储每个term的Scroll信息
+	HashMap<String, HashMap<String, Double>> termInfo=new HashMap<>();
+	
 	/**
 	 * 获得命名实体
 	 * @param text
 	 */
-	public Disambiguation(String text) {
+	public Disambiguation_PrevalenceLesk(String text) {
 		long f1=System.currentTimeMillis();
 		nameMetioned=(HashSet<String>) wordseg.segWord_Set(text, 3);
 		long f2=System.currentTimeMillis();
@@ -42,7 +46,7 @@ public class Disambiguation {
 	 * 并行获得命名实体的信息
 	 * @return
 	 */
-	public HashMap<String, Set<Document>> getEntitiesInfo() {
+	private HashMap<String, Set<Document>> getEntitiesInfo() {
 		for(String entity:nameMetioned){
     		executorService.submit(new EntityParallel(entity,entitySet));
 		}
@@ -55,6 +59,48 @@ public class Disambiguation {
 		return entitySet;
 	}
 	
+	/**
+	 * 获取消歧结果
+	 * @return
+	 */
+	public HashMap<String, String> getResult(){
+		getEntitiesInfo();
+		caculate_prevalence();
+		for(Entry<String, Set<Document>> doc:entitySet.entrySet()){
+			remove_ambiguation(doc,entitySet,reDocuments);
+		}
+		System.out.println(reDocuments);
+		return reDocuments;
+	}
+	
+	private void caculate_prevalence() {
+		if(entitySet.isEmpty()){
+			return;
+		}
+		for(String name:nameMetioned){
+			Set<Document> terms=entitySet.get(name);
+			HashMap<String, Double> temp_term=new HashMap<>();
+			if(!terms.isEmpty()){
+				int lenMax=0;
+				int len=0;
+				for(Document term:terms){
+					len=term.getString("context").length()-23;
+					if(len>lenMax){
+						lenMax=len;
+					}
+					temp_term.put(term.getString("title"), (double) (len));
+				}
+				for(Entry<String, Double> term:temp_term.entrySet()){
+					temp_term.put(term.getKey(), term.getValue()/lenMax);
+				}
+				termInfo.put(name, temp_term);
+			}
+		}
+		
+		System.out.println("terminfo:\n"+termInfo);
+		
+	}
+
 	/**
 	 * 消歧：简单看待消歧实体是否包含句子中其他命名实体
 	 * @param doc
@@ -83,54 +129,13 @@ public class Disambiguation {
 		if(!target_title.isEmpty())
 		reDocuments.put(word, target_title);
 	}
-	
-	/**
-	 * 获取消歧结果
-	 * @return
-	 */
-	public HashMap<String, String> getResult(){
-		getEntitiesInfo();
-		for(Entry<String, Set<Document>> doc:entitySet.entrySet()){
-			remove_ambiguation(doc,entitySet,reDocuments);
-		}
-		System.out.println(reDocuments);
-		return reDocuments;
-	}
-	
 	//调用实例
 	public static void main(String args[]){
 		long s=System.currentTimeMillis();
 		String text="苹果CEO是谁？";
-		Disambiguation bb=new Disambiguation(text);
+		Disambiguation_PrevalenceLesk bb=new Disambiguation_PrevalenceLesk(text);
 		bb.getResult();
 		long e=System.currentTimeMillis();
 		System.out.println("all time: "+(e-s));
-	}
-}
-class EntityParallel implements Runnable{
-	private String entity="";
-	HashMap<String, Set<Document>> entities_info=new HashMap<>();
-	public EntityParallel(String entity, HashMap<String, Set<Document>> entitySet) {
-		this.entity=entity;
-		this.entities_info=entitySet;
-	}
-
-	@Override
-	public void run() {
-		process();
-	}
-
-	private void process() {
-		GetBaikeInfo temp;
-		try {
-			temp = new GetBaikeInfo(entity,null);
-			synchronized (entities_info) {
-				Set<Document> xx=temp.writeMongo();
-				entities_info.put(entity, xx);
-			}
-		} catch (UnsupportedEncodingException e) {
-			System.out.printf("failed to get %s info\n",entity);
-		}
-		
 	}
 }

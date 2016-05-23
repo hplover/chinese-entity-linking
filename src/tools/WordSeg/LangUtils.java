@@ -487,15 +487,15 @@ public static String replaceAnsiMarkWithSpace(String text) {
 //    return builder.toString();
 
 
-	text=text.replaceAll("\\pP|\\pS|\\pZ|\\pM", " ");
+//	text=text.replaceAll("\\pP|\\pS|\\pZ|\\pM", " ");
 //	text=text.replaceAll("\\d+[月|日|年]", "");
 //	String temp=text;
 //	temp=temp.replaceAll("^\\d+", "");
 //	if(temp.isEmpty()){
 //		return "";
 //	}
-	text=text.trim();
-	text=text.replaceAll(" {1,}", " ");
+//	text=text.trim();
+//	text=text.replaceAll(" {1,}", " ");
 	return text;
 }
 
