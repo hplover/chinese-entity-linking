@@ -75,7 +75,7 @@ public class Disambiguation_Lesk {
 					tempCount=tempCount+StringUtils.countMatches(context, name.getKey());
 				}
 			}
-			if(tempCount>target_count){
+			if(tempCount>=target_count){
 				target_count=tempCount;
 				target_title=tempTitle;
 			}
@@ -100,7 +100,9 @@ public class Disambiguation_Lesk {
 	//调用实例
 	public static void main(String args[]){
 		long s=System.currentTimeMillis();
-		String text="苹果CEO是谁？";
+//		String text="苹果CEO是谁？";
+		String text="“你认为TFBOYS拥有最强大的粉丝群吗？“没错”  “为什么？” “因为只要是四叶草看了这条说说都会转。”";
+
 		Disambiguation_Lesk bb=new Disambiguation_Lesk(text);
 		bb.getResult();
 		long e=System.currentTimeMillis();

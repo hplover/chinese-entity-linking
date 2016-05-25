@@ -86,9 +86,7 @@ public class wordseg {
 	}
 	
 	public static Set<String> segWord_Set(String text_single,int mode) {
-
-
-
+		text_single=trimText(text_single);
 		HashSet<String> hSet=new HashSet<>();
 		String[] textarray=text_single.split(",");
 
