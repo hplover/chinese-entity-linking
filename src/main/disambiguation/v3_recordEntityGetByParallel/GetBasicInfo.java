@@ -26,6 +26,7 @@ import tools.WordSeg.wordseg;
  * @since 2016年3月30日
  * @author HuangDC
  * @desc 爬取单个实体的信息
+ * @not_implemented 抓取百科各个字条的浏览次数 
  */
 public class GetBasicInfo {
 		private Date date=new Date();

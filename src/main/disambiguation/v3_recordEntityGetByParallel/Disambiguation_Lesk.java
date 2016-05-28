@@ -128,6 +128,7 @@ final class EntityParallel implements Runnable{
 			temp = new GetBaikeInfo(entity,null);
 			synchronized (entities_info) {
 				Set<Document> xx=temp.writeMongo();
+				if(!xx.isEmpty())
 				entities_info.put(entity, xx);
 			}
 		} catch (UnsupportedEncodingException e) {

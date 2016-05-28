@@ -88,21 +88,20 @@ public class wordseg {
 	public static Set<String> segWord_Set(String text_single,int mode) {
 		text_single=trimText(text_single);
 		HashSet<String> hSet=new HashSet<>();
-		String[] textarray=text_single.split(",");
 
-		for(String text:textarray){
-			List<Term> termReList = sgmt.getHanLPSegment(mode, text);
-			for(Term result:termReList){
-				String ttype=result.nature.name();
-				if(hSet.contains(result.word))
+		List<Term> termReList = sgmt.getHanLPSegment(mode, text_single);
+		for(Term result:termReList){
+			String ttype=result.nature.name();
+			if(hSet.contains(result.word))
+				continue;
+			else {
+				if(!ttype.startsWith("n"))
 					continue;
-				else {
-					if(!ttype.startsWith("n"))
-						continue;
+				if(!result.word.replaceAll("\\d", "").isEmpty()&&result.word.length()>1)
 					hSet.add(result.word.toUpperCase());
-				}
 			}
 		}
+		
 		return hSet;
 	}
 	
