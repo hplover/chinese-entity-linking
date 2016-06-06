@@ -153,13 +153,13 @@ public class wordseg {
 		//String text = "在今年夏季的军方将领调整中，又有多位年轻将领被重用：成都军区政治部主任吴昌德中将，升任总政治部副主任；曾是“最年轻中将”的国防科技大学校长张育林，调任总装备部副部长；国防科技大学副校长杨学军升任该校校长，成为副大军区级将领中为数不多的“60后”。";
 		//String text = "朱主爱的粉丝是不是四叶草，四叶草其实是TFBoys的粉丝啦，不是朱主爱的粉丝。不过朱主爱的艺名叫倒四叶草没错。";
 //		String text="LINKIN PARK歌曲的演唱者麦克·信田";
-		String text="Barack Obama was born in Hawaii, he was elected in 2008. Will Donald Trump destroy New York City";
-
-		List<Result> result=xx.segWord_Result(text,3);
+//		String text="Barack Obama was born in Hawaii, he was elected in 2008. Will Donald Trump destroy New York City";
+		String text="转发微博    #防蚊虫#@上海春申口腔门诊部E.T.您分享:虫虫特工队之--夏季驱蚊大作战!";
+		List<Result> result=xx.segWord_Result(text,1);
 		for(Result tt:result){
 			System.out.println(tt.keyword+"\t"+tt.type);
 		}
-
+System.out.println(trimText(text));
 
 
 

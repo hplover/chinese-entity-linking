@@ -3,6 +3,7 @@ package main;
 import java.util.Arrays;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
@@ -22,10 +23,10 @@ public class mongodb_test {
 	static MongoCollection<Document> test_collection =null;
 
 	static{
-		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
-		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	
-		db = mongoClient.getDatabase("test_database");
-		test_collection = db.getCollection("test_collection");
+//		credential = MongoCredential.createCredential("mdbadmin","admin","bjgdFristDB2016".toCharArray());
+//		mongoClient = new MongoClient(new ServerAddress("idcbak.answercow.org",3006),Arrays.asList(credential));	
+//		db = mongoClient.getDatabase("test_database");
+//		test_collection = db.getCollection("test_collection");
 	}
 	public static void main(String args[]){
 //		Document final_doc=new Document();
@@ -62,17 +63,17 @@ public class mongodb_test {
 //		System.out.println("insert done");
 //		System.out.println("now read from mongodb");
 		
-		MongoCursor<Document> bb=test_collection.find().iterator();
-		Document qq=new Document();
-		while(bb.hasNext()){
-			qq=bb.next();
-			for(Entry<String, Object> pp:qq.entrySet()){
-				if(!pp.getKey().equals("_id"))
-				System.out.println(pp.getKey()+":"+pp.getValue());
-			}
-		}
-		
-		
+//		MongoCursor<Document> bb=test_collection.find().iterator();
+//		Document qq=new Document();
+//		while(bb.hasNext()){
+//			qq=bb.next();
+//			for(Entry<String, Object> pp:qq.entrySet()){
+//				if(!pp.getKey().equals("_id"))
+//				System.out.println(pp.getKey()+":"+pp.getValue());
+//			}
+//		}
+		String text="select * from bb;";
+		System.out.println(StringEscapeUtils.unescapeJava(text));
 		
 	}
 }
