@@ -63,7 +63,11 @@ public class hanlptext {
 		title_pinyin.clear();
 		
 		
+		
+		
+		
 		pinyin=PinyinHelper.convertToPinyinString("北京", " ",PinyinFormat.WITHOUT_TONE);
+		
 		System.out.println(pinyin);
 		
 		

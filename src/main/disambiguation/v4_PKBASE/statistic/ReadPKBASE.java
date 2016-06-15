@@ -1,4 +1,4 @@
-package main.disambiguation.v4_PKBASE;
+package main.disambiguation.v4_PKBASE.statistic;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6,16 +6,15 @@ import java.util.Set;
 import java.util.Map.Entry;
 import org.bson.Document;
 
-import com.github.stuxuhai.jpinyin.PinyinFormat;
-import com.github.stuxuhai.jpinyin.PinyinHelper;
 import com.mongodb.client.FindIterable;
+import main.disambiguation.v4_PKBASE.subTools.*;
 
 public class ReadPKBASE extends QueryPKBase {
 
 	static int fenmu=0;
 	static int fenzi=0;
 	
-	static int error_pinyin,error_startwith,error_equal,error_included,error_overlap;
+	static int error_pinyin,error_startwith,error_equal,error_included,error_overlap,error_norelation;
 	
 	
 	public static void main(String args[]){
@@ -30,21 +29,22 @@ public class ReadPKBASE extends QueryPKBase {
 			propertyName.clear();
 		}
 		System.out.println(fenzi+"\t"+fenmu+"\t"+fenzi/(double)fenmu);
+		System.out.println("error_pinyin:"+error_pinyin+"\nerror_startwith:"+error_startwith+"\nerror_equal:"+error_equal+"\nerror_included:"+error_included+"\nerror_overlap:"+error_overlap+"\nerror_norelation:"+error_norelation);
 	}
 
-	static String Errorstatistic(String key, String rightTitle, String errorTitle) {
-		String key_pinyin=PinyinHelper.convertToPinyinString(key, " ", PinyinFormat.WITH_TONE_NUMBER);
-		String right_pinyin=PinyinHelper.convertToPinyinString(rightTitle, " ", PinyinFormat.WITH_TONE_NUMBER);
-		if(key_pinyin.equals(right_pinyin)){
+	public static String Errorstatistic(String key, String rightTitle, String errorTitle) {
+		if(key.equals("孙扬")){
+			System.out.println();
+		}
+		if(PinyinEqual.full_equal(rightTitle, key)){
 			error_pinyin++;
 			return "pinyin";
 		}
-		
 		if(key.equals(errorTitle)){
 			error_equal++;
 			return "equal";
 		}
-		if(rightTitle.startsWith(key)){
+		if(rightTitle.startsWith(key)||key.startsWith(rightTitle)){
 			error_startwith++;
 			return "startwith";
 		}
@@ -59,7 +59,7 @@ public class ReadPKBASE extends QueryPKBase {
 		for(int i=0;i<rightTitleArray.length;i++){
 			rightTitleSet.add(rightTitleArray[i]);
 		}
-		if(rightTitleSet.containsAll(keySet)){
+		if(rightTitleSet.containsAll(keySet)||keySet.containsAll(rightTitleSet)){
 			error_included++;
 			return "included";
 		}
@@ -68,11 +68,11 @@ public class ReadPKBASE extends QueryPKBase {
 			error_overlap++;
 			return "overlap";
 		}
-		
+		error_norelation++;
 		return "no relation";
 	}
 	
-	static HashMap<String, String> getResult(Document weibo, HashMap<String, String> entityName_ID,
+	public static HashMap<String, String> getResult(Document weibo, HashMap<String, String> entityName_ID,
 			Set<String> propertyName) {
 		boolean isContentPrinted=true;
 		String rightTitle,errorTitle;
@@ -87,13 +87,13 @@ public class ReadPKBASE extends QueryPKBase {
 			}
 			else{
 				if(isContentPrinted){
-					System.out.println("\n"+weibo.getString("content"));
+//					System.out.println("\n"+weibo.getString("content"));
 					isContentPrinted=false;
 				}
 				rightTitle=getTitleByID(exactValueID);
 				errorTitle=getTitleByID(queryValueID);
 				error_type=Errorstatistic(key,rightTitle,errorTitle);
-				System.out.println(error_type+"\t"+key+"\t"+exactValueID+"\t"+rightTitle+"\t"+queryValueID+"\t"+errorTitle);
+//				System.out.println(error_type+"\t"+key+"\t"+exactValueID+"\t"+rightTitle+"\t"+queryValueID+"\t"+errorTitle);
 			}
 		}
 		return null;

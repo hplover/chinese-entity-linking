@@ -1,4 +1,4 @@
-package main.disambiguation.v4_PKBASE;
+package main.disambiguation.v4_PKBASE.statistic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,8 +22,8 @@ public class QueryPKBase {
 	static MongoCredential credential =null;
 	static MongoClient mongoClient =null;
 	static MongoDatabase db =null;
-	static MongoCollection<org.bson.Document> PKBASE = null;
-	static MongoCollection<Document> ELANNOTATION = null;
+	public static MongoCollection<org.bson.Document> PKBASE = null;
+	public static MongoCollection<Document> ELANNOTATION = null;
 
 	
 	static int query_inclued_aa=0;
@@ -53,7 +53,7 @@ public class QueryPKBase {
 		ELANNOTATION=db.getCollection("Annotationquery");
 	}
 	
-	static List<Document> getFuzzyQueryInPKBase(String input){
+	public static List<Document> getFuzzyQueryInPKBase(String input){
 		List<Document> result=new ArrayList<>();
 		Document filter=new Document();
 		String regex="^[^（]*"+input+"[^）^（]*$";
@@ -64,7 +64,7 @@ public class QueryPKBase {
 		}
 		return result;
 	}
-	static String getIDbyTitle(String input){
+	public static String getIDbyTitle(String input){
 		Document filter=new Document();
 		filter.put("title_unique", input);
 		Document result=PKBASE.find(filter).first();
@@ -74,7 +74,7 @@ public class QueryPKBase {
 		else return result.getString("id");
 	}
 
-	static HashMap<String, String> getEntityName_ID(Document weibo){
+	public static HashMap<String, String> getEntityName_ID(Document weibo){
 		Document entities=(Document) weibo.get("entity");
 		Set<String> keyset=entities.keySet();
 		HashMap<String,String> entityName_ID=new HashMap<>();
@@ -86,7 +86,7 @@ public class QueryPKBase {
 		return entityName_ID;
 	}
 	
-	static String getTitleByID(String id){
+	public static String getTitleByID(String id){
 		Document query=new Document();
 		query.append("id", id);
 		try{
@@ -96,7 +96,7 @@ public class QueryPKBase {
 		}
 	}
 	
-	static Set<String> getPropertyName(Document weibo, HashMap<String, String> entityName_ID) {
+	public static Set<String> getPropertyName(Document weibo, HashMap<String, String> entityName_ID) {
 		String content=weibo.getString("content");
 		Set<String> propertyName=wordseg.segWord_Set(content, 3);
 		Iterator<String> it=propertyName.iterator();
