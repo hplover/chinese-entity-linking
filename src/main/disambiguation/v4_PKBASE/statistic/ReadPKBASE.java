@@ -23,7 +23,7 @@ public class ReadPKBASE extends QueryPKBase {
 		Set<String> propertyName=new HashSet<>();
 		for(Document doc:el){
 			entityName_ID=getEntityName_ID(doc);
-			propertyName=getPropertyName(doc,entityName_ID);
+			propertyName=getContext(doc,entityName_ID);
 			getResult(doc,entityName_ID,propertyName);
 			entityName_ID.clear();
 			propertyName.clear();

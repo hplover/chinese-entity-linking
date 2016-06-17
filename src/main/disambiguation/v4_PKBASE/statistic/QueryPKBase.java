@@ -96,16 +96,16 @@ public class QueryPKBase {
 		}
 	}
 	
-	public static Set<String> getPropertyName(Document weibo, HashMap<String, String> entityName_ID) {
+	public static Set<String> getContext(Document weibo, HashMap<String, String> entityName_ID) {
 		String content=weibo.getString("content");
-		Set<String> propertyName=wordseg.segWord_Set(content, 3);
-		Iterator<String> it=propertyName.iterator();
+		Set<String> context=wordseg.segWord_Set(content, 3);
+		Iterator<String> it=context.iterator();
 		while(it.hasNext()){
 			String pro=it.next();
 			if(entityName_ID.containsKey(pro)){
 				it.remove();
 			}
 		}
-		return propertyName;
+		return context;
 	}
 }
