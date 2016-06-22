@@ -6,16 +6,21 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
 
 public class Word2Vec {
-	private static double similarity_threshold=0;//尽可能的小，去除噪音
+	static boolean isLoad=false;
 	private static int topNSize = 40;
 	private static  HashMap<String, float[]> wordMap = new HashMap<String, float[]>();
+	private static String path="resources/wiki.zh.text.vector";
 	
-	public void loadSummaryModel(String path) throws IOException {
+	public static void loadSummaryModel(String path) throws IOException {
+		if(isLoad==true){
+			return ;
+		}
 		@SuppressWarnings("resource")
 		BufferedReader bufferedReader=new BufferedReader(new FileReader(path));
 		String line;
@@ -23,8 +28,8 @@ public class Word2Vec {
 		float vector=0;
 		float[] value = null;
 		String[] word_value = null;
+		bufferedReader.readLine();
 		while((line=bufferedReader.readLine()) != null){
-
 			double len = 0;
 			word_value=line.split(" ");
 			word=word_value[0];
@@ -40,6 +45,7 @@ public class Word2Vec {
 			}
 			wordMap.put(word, value);
 		}
+		isLoad=true;
 	}
 	
 	public static Set<WordEntry> distance(String queryWord) {
@@ -73,11 +79,20 @@ public class Word2Vec {
 	}
 	
 	public static double twoWordsDis(String w1,String w2){
+		try {
+			loadSummaryModel(path);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(wordMap.isEmpty()){
+			return 0;
+		}
 		double result = 0;
 		float[] v1=wordMap.get(w1);
 		float[] v2=wordMap.get(w2);
 		if(v1==null||v2==null||v1.length!=v2.length){
-			return 0;
+			return -1;
 		}
 		for(int i=0;i<v1.length;i++){
 			result+=v1[i]*v2[i];
@@ -85,21 +100,36 @@ public class Word2Vec {
 		return result;
 	}
 	
-	public static double twoSetsDis(Set<String> s1, Set<String> s2){
+	public static double twoSetsDis(Set<String> s1, Set<String> s2, double similarity_threshold){
+		try {
+			loadSummaryModel(path);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		double result=0;
 		double results=0;
-		int word_count=0;
+		int word_count=1;
 		for(String w1:s1){
 			for(String w2:s2){
 				result=twoWordsDis(w1, w2);
 				if(result>similarity_threshold){
 					results+=result;
-					word_count++;
+					word_count++;//因为similarity_threshold很小，所以不用担心{A,B,C},{A,W,Z,Y,X}这种情况
 				}
 			}
 		}
 		return results/word_count;
 	}
-	
+	public static void main(String[] args){
+		while(true){
+			Scanner reader = new Scanner(System.in);  // Reading from System.in
+			System.out.println("Enter two strings: ");
+			String n = reader.nextLine(); // Scans the next token of the input as an int.
+			String m = reader.nextLine();
+			System.out.println(twoWordsDis(n, m));
+			System.out.println();
+		}
+	}
 }
 	

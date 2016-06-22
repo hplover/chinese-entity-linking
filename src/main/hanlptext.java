@@ -1,6 +1,7 @@
 package main;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.bson.Document;
 
@@ -58,11 +59,20 @@ public class hanlptext {
 		pinyin=PinyinHelper.convertToPinyinString(title, " ", PinyinFormat.WITH_TONE_NUMBER);
 		title_pinyin.append("title", title);
 		title_pinyin.append("pinyin", pinyin);
-		PinYinBase.insertOne(title_pinyin);
+//		PinYinBase.insertOne(title_pinyin);
 		System.out.println(title_pinyin);
 		title_pinyin.clear();
 		
+		HashMap<String, String> bb1=new HashMap<>();
+		bb1.put("1", "b");
+		bb1.put("2", "n");
+		bb1.put("2", "3");
+		System.out.println(bb1);
 		
+		
+		String t1="北京足球赛";
+		String t2="北京";
+		System.out.println(t1.contains(t2));
 		
 		
 		

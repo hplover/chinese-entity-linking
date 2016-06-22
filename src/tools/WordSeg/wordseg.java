@@ -97,7 +97,7 @@ public class wordseg {
 			else {
 				if(!ttype.startsWith("n"))
 					continue;
-				if(!result.word.replaceAll("\\d", "").isEmpty()&&result.word.length()>1)
+				if(!result.word.replaceAll("\\d", "").isEmpty()&&result.word.length()>1)//去掉数字
 					hSet.add(result.word.toUpperCase());
 			}
 		}

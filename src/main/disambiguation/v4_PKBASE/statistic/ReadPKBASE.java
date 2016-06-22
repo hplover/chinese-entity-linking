@@ -98,4 +98,7 @@ public class ReadPKBASE extends QueryPKBase {
 		}
 		return null;
 	}
+	public static void printError(){
+		System.out.println("error_pinyin:"+error_pinyin+"\nerror_startwith:"+error_startwith+"\nerror_equal:"+error_equal+"\nerror_included:"+error_included+"\nerror_overlap:"+error_overlap+"\nerror_norelation:"+error_norelation);
+	}
 }

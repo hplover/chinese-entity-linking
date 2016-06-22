@@ -56,7 +56,7 @@ public class QueryPKBase {
 	public static List<Document> getFuzzyQueryInPKBase(String input){
 		List<Document> result=new ArrayList<>();
 		Document filter=new Document();
-		String regex="^[^（]*"+input+"[^）^（]*$";
+		String regex="\\w*"+input+"\\w*";
 		filter.put("title_unique", java.util.regex.Pattern.compile(regex));
 		FindIterable<Document> resultFuzzy=PKBASE.find(filter);
 		for(Document re:resultFuzzy){
@@ -64,6 +64,12 @@ public class QueryPKBase {
 		}
 		return result;
 	}
+	
+	public static void main(String bb[]){
+		System.out.println(getFuzzyQueryInPKBase("大别山"));
+	}
+	
+	
 	public static String getIDbyTitle(String input){
 		Document filter=new Document();
 		filter.put("title_unique", input);
@@ -81,7 +87,7 @@ public class QueryPKBase {
 		Document entity=new Document();
 		for(String key:keyset){
 			entity=(Document)entities.get(key);
-			entityName_ID.put(entity.getString("name"),entity.getString("kb"));
+			entityName_ID.put(tools.WordSeg.wordseg.trimText(entity.getString("name")),entity.getString("kb"));
 		}
 		return entityName_ID;
 	}

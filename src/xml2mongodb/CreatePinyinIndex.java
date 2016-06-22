@@ -1,5 +1,7 @@
 package xml2mongodb;
-
+/*
+ * 把知识库中的实体名字的拼音存下来
+ */
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
